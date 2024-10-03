@@ -29,7 +29,10 @@ async def list_sevas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         if not sevas:
             await update.message.reply_text("No Seva slots available at the moment.")
         else:
-            seva_list = "\n".join([f"{seva[1]}: {seva[2]} ({seva[3]})" for seva in sevas])  # Adjust indices if needed
+            # Accessing each seva using key names instead of indices
+            seva_list = "\n".join(
+                [f"{seva['seva_name']}: {seva['time_slot']} on {seva['date_slot']} ({seva['description']})" for seva in sevas]
+            )
             await update.message.reply_text(f"Available Seva slots:\n{seva_list}")
     except Exception as e:
         logger.error(f"Error fetching Seva slots: {str(e)}")
