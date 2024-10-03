@@ -19,18 +19,25 @@ def connect_db():
 def home():
     return 'Welcome to the Seva Bot API!'
 
-# Route to get all seva slots
+# Route to get all seva slots with volunteers
 @app.route('/sevas', methods=['GET'])
 def get_sevas():
     conn = connect_db()
     if isinstance(conn, str):
         return jsonify({'error': conn}), 500  # If there was an error connecting to the DB
-    
+
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM seva_slots")
+    # Get all sevas
+    cursor.execute("""
+        SELECT s.id, s.seva_name, s.time_slot, s.date_slot, s.description, 
+        COALESCE(array_agg(v.name) FILTER (WHERE v.name IS NOT NULL), '{}') AS volunteers
+        FROM seva_slots s
+        LEFT JOIN volunteers v ON s.id = v.seva_id
+        GROUP BY s.id;
+    """)
     sevas = cursor.fetchall()
     conn.close()
-    
+
     # Map the result to include column names
     sevas_list = []
     for seva in sevas:
@@ -38,11 +45,13 @@ def get_sevas():
             'id': seva[0],
             'seva_name': seva[1],
             'time_slot': seva[2],
-            'date_slot': seva[3],  # Include the date slot
-            'description': seva[4]
+            'date_slot': seva[3],
+            'description': seva[4],
+            'volunteers': seva[5]  # List of volunteers
         })
-    
+
     return jsonify(sevas_list)
+
 
 # Route to add a new seva
 @app.route('/add_seva', methods=['POST'])
