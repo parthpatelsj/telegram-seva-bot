@@ -1,11 +1,12 @@
 from flask import Flask, jsonify, request
-import sqlite3
+import psycopg2
+import os
 
 app = Flask(__name__)
 
-# Connect to database function
+# Connect to PostgreSQL function
 def connect_db():
-    conn = sqlite3.connect('seva.db')
+    conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode='require')
     return conn
 
 # Route to get all seva slots
@@ -28,7 +29,7 @@ def add_seva():
     
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO seva_slots (seva_name, time_slot, description) VALUES (?, ?, ?)", (seva_name, time_slot, description))
+    cursor.execute("INSERT INTO seva_slots (seva_name, time_slot, description) VALUES (%s, %s, %s)", (seva_name, time_slot, description))
     conn.commit()
     conn.close()
     
@@ -42,11 +43,11 @@ def join_seva():
     
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT seva_name FROM seva_slots WHERE id = ?", (seva_id,))
+    cursor.execute("SELECT seva_name FROM seva_slots WHERE id = %s", (seva_id,))
     seva = cursor.fetchone()
     
     if seva:
-        cursor.execute("INSERT INTO volunteers (name, seva_id) VALUES (?, ?)", (name, seva_id))
+        cursor.execute("INSERT INTO volunteers (name, seva_id) VALUES (%s, %s)", (name, seva_id))
         conn.commit()
         conn.close()
         return jsonify({'message': f'{name} has joined the seva: {seva[0]}'})
