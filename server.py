@@ -6,13 +6,24 @@ app = Flask(__name__)
 
 # Connect to PostgreSQL function
 def connect_db():
-    conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode='require')
-    return conn
+    try:
+        conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode='require')
+        return conn
+    except Exception as e:
+        return str(e)  # Return the error message if connection fails
+
+# Default route to avoid 404 on root
+@app.route('/')
+def home():
+    return 'Welcome to the Seva Bot API!'
 
 # Route to get all seva slots
 @app.route('/sevas', methods=['GET'])
 def get_sevas():
     conn = connect_db()
+    if isinstance(conn, str):
+        return jsonify({'error': conn}), 500  # If there was an error connecting to the DB
+    
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM seva_slots")
     sevas = cursor.fetchall()
@@ -28,6 +39,9 @@ def add_seva():
     description = request.json['description']
     
     conn = connect_db()
+    if isinstance(conn, str):
+        return jsonify({'error': conn}), 500  # If there was an error connecting to the DB
+    
     cursor = conn.cursor()
     cursor.execute("INSERT INTO seva_slots (seva_name, time_slot, description) VALUES (%s, %s, %s)", (seva_name, time_slot, description))
     conn.commit()
@@ -42,6 +56,9 @@ def join_seva():
     seva_id = request.json['seva_id']
     
     conn = connect_db()
+    if isinstance(conn, str):
+        return jsonify({'error': conn}), 500  # If there was an error connecting to the DB
+    
     cursor = conn.cursor()
     cursor.execute("SELECT seva_name FROM seva_slots WHERE id = %s", (seva_id,))
     seva = cursor.fetchone()
