@@ -1,0 +1,99 @@
+{
+    "mandals": {
+      "Bal Mandal": {
+        "Bal RCT": [
+          {
+            "name": "2025 Project Calendar Overview",
+            "time": "10:30 AM - 12:00 PM",
+            "room": "25",
+            "presenter": "Vandanbhai (LA Bal RC)"
+          },
+          {
+            "name": "Creating Leaders",
+            "time": "2:00 PM - 3:00 PM",
+            "room": "17",
+            "presenter": "Dipulbhai (PHX Bal RC)"
+          }
+        ],
+        "Bal Coordinators": [
+          {
+            "name": "Synergy: Best Practices",
+            "time": "4:30 PM - 5:30 PM",
+            "room": "15",
+            "presenter": "Vedbhai (Bal RA)"
+          },
+          {
+            "name": "National Convention in Sabhas",
+            "time": "6:00 PM - 7:00 PM",
+            "room": "17",
+            "presenter": "Vinodbhai (SJ Bal Coordinator) & Ankurbhai (PDX)"
+          }
+        ],
+        "Bal Sabha Karyakars": [
+          {
+            "name": "Own Your Goal",
+            "time": "10:30 AM - 12:00 PM",
+            "room": "25",
+            "presenter": "Krunal"
+          },
+          {
+            "name": "What Does Your SAMP Look Like?",
+            "time": "2:00 PM - 3:00 PM",
+            "room": "25",
+            "presenter": "Aksharbhai (SJ Bal RC)"
+          },
+          {
+            "name": "IT Crash-Course",
+            "time": "4:30 PM - 5:30 PM",
+            "room": "25",
+            "presenter": "Vedbhai (Bal RA)"
+          }
+        ]
+      },
+      "Kishore Mandal": {
+        "Kishore RCT": [
+          {
+            "name": "What it Means to Be an RCT Member",
+            "time": "10:30 AM - 12:00 PM",
+            "room": "22",
+            "presenter": "Pujya Akhandanand Swami"
+          },
+          {
+            "name": "Sabha Sanchalak R&R",
+            "time": "4:30 PM - 5:30 PM",
+            "room": "26",
+            "presenter": "Jaybhai Maj and Team"
+          }
+        ],
+        "Kishore Coordinators": [
+          {
+            "name": "Andar Akshardham",
+            "time": "2:00 PM - 3:00 PM",
+            "room": "22",
+            "presenter": "Pujya Akhandanand Swami"
+          },
+          {
+            "name": "Empowering Local Analysts",
+            "time": "3:15 PM - 4:15 PM",
+            "room": "22",
+            "presenter": "Various Presenters"
+          }
+        ],
+        "Kishore Sabha Karyakars": [
+          {
+            "name": "Sampark Workshop",
+            "time": "10:30 AM - 11:30 AM",
+            "room": "21",
+            "presenter": "Jaybhai Maj and Team"
+          },
+          {
+            "name": "State of the Region",
+            "time": "4:30 PM - 5:30 PM",
+            "room": "20",
+            "presenter": "Aksharbhai Nico Patel"
+          }
+        ]
+      }
+    }
+  }
+  

@@ -23,6 +23,7 @@ STATIC_RESPONSES = {
     "today_food_menu": "Today's menu includes:\nBreakfast: Idli & Sambar\nLunch: Paneer Tikka\nDinner: Veg Biryani & Raita."
 }
 
+# Command: Start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a welcome message with interactive buttons."""
     keyboard = [
@@ -39,12 +40,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup=reply_markup
     )
 
+# Callback Handler for Static Responses
 async def handle_button_click(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle button clicks for static responses."""
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
-
-    # Retrieve the corresponding response from STATIC_RESPONSES
     response = STATIC_RESPONSES.get(query.data, "Sorry, I couldn't find the information.")
     await query.edit_message_text(text=response)
 
@@ -109,10 +108,10 @@ async def join_seva_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         logger.error(f"Error joining Seva: {str(e)}")
         await query.edit_message_text(text="Error joining Seva. Please try again later.")
 
+# Command: Schedule
 async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Fetch and display the schedule from the backend."""
     try:
-        # Fetch the schedule from the backend
         response = requests.get(f"{BASE_URL}/schedule")
         if response.status_code != 200:
             await update.message.reply_text("Failed to fetch the schedule. Please try again later.")
@@ -120,15 +119,14 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         
         schedule = response.json()
 
-        # Format the schedule as a message
+        # Format the schedule for the user
         message = "*Event Schedule*\n\n"
-        for day in schedule:
+        for day in schedule["days"]:
             message += f"📅 *{day['day']}*\n"
-            for session in day['sessions']:
-                message += f"- {session['time']}: {session['title']}\n"
+            for session in day["sessions"]:
+                message += f"- {session['time']}: {session['title']} (Room: {session.get('room', 'TBD')})\n"
             message += "\n"
 
-        # Send the schedule to the user
         await update.message.reply_text(message, parse_mode="Markdown")
 
     except Exception as e:
@@ -136,6 +134,65 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text("Error fetching the schedule. Please try again later.")
 
 
+# Command: Mandals
+async def list_mandals(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    try:
+        response = requests.get(f"{BASE_URL}/mandals")
+        if response.status_code != 200:
+            await update.message.reply_text("Failed to fetch mandals. Please try again later.")
+            return
+        
+        mandals = response.json()["mandals"]
+        keyboard = [[InlineKeyboardButton(mandal, callback_data=f"mandal:{mandal}")] for mandal in mandals]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await update.message.reply_text("Select a Mandal:", reply_markup=reply_markup)
+    except Exception as e:
+        logger.error(f"Error fetching mandals: {str(e)}")
+        await update.message.reply_text("Error fetching mandals. Please try again later.")
+
+# Callback Handler: Mandal Selection
+async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    mandal_name = query.data.split(":")[1]
+
+    try:
+        response = requests.get(f"{BASE_URL}/mandals/{mandal_name}/tracks")
+        if response.status_code != 200:
+            await query.edit_message_text("Failed to fetch tracks. Please try again later.")
+            return
+
+        tracks = response.json()["tracks"]
+        keyboard = [[InlineKeyboardButton(track, callback_data=f"track:{mandal_name}:{track}")] for track in tracks]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.answer()
+        await query.edit_message_text(f"Tracks for {mandal_name}:", reply_markup=reply_markup)
+    except Exception as e:
+        logger.error(f"Error fetching tracks: {str(e)}")
+        await query.edit_message_text("Error fetching tracks. Please try again later.")
+
+# Callback Handler: Track Selection
+async def handle_track_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    mandal_name, track_name = query.data.split(":")[1:]
+
+    try:
+        response = requests.get(f"{BASE_URL}/mandals/{mandal_name}/tracks/{track_name}/sessions")
+        if response.status_code != 200:
+            await query.edit_message_text("Failed to fetch sessions. Please try again later.")
+            return
+
+        sessions = response.json()["sessions"]
+        message = f"Sessions for {track_name}:\n"
+        for session in sessions:
+            message += f"- {session['name']} ({session['time']} in Room {session.get('room', 'TBD')})\n"
+
+        await query.answer()
+        await query.edit_message_text(message)
+    except Exception as e:
+        logger.error(f"Error fetching sessions: {str(e)}")
+        await query.edit_message_text("Error fetching sessions. Please try again later.")
 
 
 def main() -> None:
@@ -144,15 +201,14 @@ def main() -> None:
 
     # Register handlers
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("list_sevas", list_sevas))
+    # application.add_handler(CommandHandler("list_sevas", list_sevas))
     # application.add_handler(CallbackQueryHandler(join_seva_callback))
-    application.add_handler(CommandHandler("wifi", wifi_information))
-    application.add_handler(CommandHandler("transportation", transportation))
-    application.add_handler(CommandHandler("common_session_seating", common_session_seating))
-    application.add_handler(CommandHandler("block_schedule", block_schedule))
-    application.add_handler(CommandHandler("today_food_menu", today_food_menu))
+    application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("schedule", schedule))
+    application.add_handler(CommandHandler("mandals", list_mandals))
     application.add_handler(CallbackQueryHandler(handle_button_click))
+    application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
+    application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
 
 
     # Run the bot

@@ -8,6 +8,7 @@ app = Flask(__name__)
 CORS(app)
 
 SCHEDULE_FILE = 'schedule.json'
+BREAKOUTS_FILE = 'breakouts.json'
 
 
 # Connect to PostgreSQL function
@@ -22,6 +23,53 @@ def connect_db():
 @app.route('/')
 def home():
     return 'Welcome to the Seva Bot API!'
+
+# Load the breakout schedule JSON
+def load_breakout_schedule():
+    with open(BREAKOUTS_FILE, 'r') as file:
+        return json.load(file)
+    
+# Endpoint: Get all Mandals
+@app.route('/mandals', methods=['GET'])
+def get_mandals():
+    data = load_breakout_schedule()
+    return jsonify({"mandals": list(data["mandals"].keys())})
+
+# Endpoint: Get all Tracks for a Mandal
+@app.route('/mandals/<mandal_name>/tracks', methods=['GET'])
+def get_tracks(mandal_name):
+    data = load_breakout_schedule()
+    mandals = data.get("mandals", {})
+    if mandal_name not in mandals:
+        return jsonify({"error": "Mandal not found"}), 404
+    return jsonify({"tracks": list(mandals[mandal_name].keys())})
+
+# Endpoint: Get all Sessions for a Track
+@app.route('/mandals/<mandal_name>/tracks/<track_name>/sessions', methods=['GET'])
+def get_sessions(mandal_name, track_name):
+    data = load_breakout_schedule()
+    mandals = data.get("mandals", {})
+    if mandal_name not in mandals:
+        return jsonify({"error": "Mandal not found"}), 404
+    tracks = mandals[mandal_name]
+    if track_name not in tracks:
+        return jsonify({"error": "Track not found"}), 404
+    return jsonify({"sessions": tracks[track_name]})
+
+# Endpoint: Search for a Session by Name
+@app.route('/sessions/<session_name>', methods=['GET'])
+def search_session(session_name):
+    data = load_breakout_schedule()
+    for mandal_name, tracks in data.get("mandals", {}).items():
+        for track_name, sessions in tracks.items():
+            for session in sessions:
+                if session["name"].lower() == session_name.lower():
+                    return jsonify({
+                        "mandal": mandal_name,
+                        "track": track_name,
+                        "session": session
+                    })
+    return jsonify({"error": "Session not found"}), 404
 
 # Utility function to load the schedule
 def load_schedule():
