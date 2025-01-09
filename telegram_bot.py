@@ -14,28 +14,29 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 BASE_URL = "https://telegram-seva-bot-16ec0e933bf1.herokuapp.com"
 
 STATIC_RESPONSES = {
-    "wifi": "RKC Delegates\nSSID: mandir\nPassword: (open) no password",
-    "transportation": "Today, shuttles to the hotel will begin after dinner at 8:30 PM till 9:30 PM.",
-    "common_session_seating": "Common session seating will be updated shortly!",
-    "today_food_menu": "Today's menu includes:\nBreakfast: Idli & Sambar\nLunch: Paneer Tikka\nDinner: Veg Biryani & Raita."
+    "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
+    "transportation": "🚌 *Transportation Details*\nToday, shuttles to the hotel will begin after dinner at *8:30 PM* till *9:30 PM*.",
+    "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!",
+    "today_food_menu": "🍴 *Today's Food Menu*\n- 🥞 *Breakfast*: Idli & Sambar\n- 🥗 *Lunch*: Paneer Tikka\n- 🍛 *Dinner*: Veg Biryani & Raita"
 }
 
 # Command: Start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a welcome message with interactive buttons."""
     keyboard = [
-        [InlineKeyboardButton("Wi-Fi Information", callback_data="wifi")],
-        [InlineKeyboardButton("Transportation Details", callback_data="transportation")],
-        [InlineKeyboardButton("Common Session Seating", callback_data="common_session_seating")],
-        [InlineKeyboardButton("Event Schedule", callback_data="event_schedule")],
-        [InlineKeyboardButton("Breakout Schedule", callback_data="breakout_schedule")],
-        [InlineKeyboardButton("Today's Food Menu", callback_data="today_food_menu")],
+        [InlineKeyboardButton("📶 Wi-Fi Information", callback_data="wifi")],
+        [InlineKeyboardButton("🚌 Transportation Details", callback_data="transportation")],
+        [InlineKeyboardButton("📍 Common Session Seating", callback_data="common_session_seating")],
+        [InlineKeyboardButton("📅 Event Schedule", callback_data="event_schedule")],
+        [InlineKeyboardButton("📘 Breakout Schedule", callback_data="breakout_schedule")],
+        [InlineKeyboardButton("🍴 Today's Food Menu", callback_data="today_food_menu")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        "Welcome to the RKC 2025 Assistant Bot!\nSelect an option below to get information:",
-        reply_markup=reply_markup
+        "👋 Welcome to the *RKC 2025 Assistant Bot*!\n\nSelect an option below to get information:",
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
     )
 
 # Callback Handler for Static Responses
@@ -43,14 +44,7 @@ async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_T
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
     response = STATIC_RESPONSES.get(query.data, "Sorry, I couldn't find the information.")
-    await query.edit_message_text(text=response)
-
-# Callback Handler for Static Responses
-async def handle_button_click(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    query = update.callback_query
-    await query.answer()
-    response = STATIC_RESPONSES.get(query.data, "Sorry, I couldn't find the information.")
-    await query.edit_message_text(text=response)
+    await query.edit_message_text(text=response, parse_mode="Markdown")
 
 # Callback Handler: Event Schedule
 async def event_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -62,17 +56,16 @@ async def event_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             await query.edit_message_text("Failed to fetch the event schedule. Please try again later.")
             return
         schedule = response.json()
-        message = "*Event Schedule*\n\n"
+        message = "*📅 Event Schedule*\n\n"
         for day in schedule:
-            message += f"📅 *{day['day']}*\n"
+            message += f"📆 *{day['day']}*\n"
             for session in day['sessions']:
-                message += f"- {session['time']}: {session['title']} (Room: {session.get('room', 'TBD')})\n"
+                message += f"⏰ {session['time']} - *{session['title']}* (Room: {session.get('room', 'TBD')})\n"
             message += "\n"
         await query.edit_message_text(message, parse_mode="Markdown")
     except Exception as e:
         logger.error(f"Error fetching event schedule: {str(e)}")
         await query.edit_message_text("Error fetching the event schedule. Please try again later.")
-
 
 # Callback Handler: Breakout Schedule
 async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -84,13 +77,12 @@ async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             await query.edit_message_text("Failed to fetch breakout schedule. Please try again later.")
             return
         mandals = response.json()["mandals"]
-        keyboard = [[InlineKeyboardButton(mandal, callback_data=f"mandal:{mandal}")] for mandal in mandals]
+        keyboard = [[InlineKeyboardButton(f"📘 {mandal}", callback_data=f"mandal:{mandal}")] for mandal in mandals]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text("Select a Mandal:", reply_markup=reply_markup)
+        await query.edit_message_text("👥 Select a Mandal for Breakout Sessions:", reply_markup=reply_markup)
     except Exception as e:
         logger.error(f"Error fetching breakout schedule: {str(e)}")
         await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
-
 
 # Callback Handler: Mandal Selection
 async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -102,9 +94,9 @@ async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_
             await query.edit_message_text("Failed to fetch tracks. Please try again later.")
             return
         tracks = response.json()["tracks"]
-        keyboard = [[InlineKeyboardButton(track, callback_data=f"track:{mandal_name}:{track}")] for track in tracks]
+        keyboard = [[InlineKeyboardButton(f"🔹 {track}", callback_data=f"track:{mandal_name}:{track}")] for track in tracks]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(f"Tracks for {mandal_name}:", reply_markup=reply_markup)
+        await query.edit_message_text(f"🔍 Tracks for {mandal_name}:", reply_markup=reply_markup)
     except Exception as e:
         logger.error(f"Error fetching tracks: {str(e)}")
         await query.edit_message_text("Error fetching tracks. Please try again later.")
@@ -119,14 +111,13 @@ async def handle_track_selection(update: Update, context: ContextTypes.DEFAULT_T
             await query.edit_message_text("Failed to fetch sessions. Please try again later.")
             return
         sessions = response.json()["sessions"]
-        message = f"Sessions for {track_name}:\n"
+        message = f"*📘 Sessions for {track_name}*\n\n"
         for session in sessions:
-            message += f"- {session['name']} ({session['time']} in Room {session.get('room', 'TBD')})\n"
-        await query.edit_message_text(message)
+            message += f"🔸 *{session['name']}*\n  ⏰ {session['time']}\n  🏫 Room: {session.get('room', 'TBD')}\n\n"
+        await query.edit_message_text(message, parse_mode="Markdown")
     except Exception as e:
         logger.error(f"Error fetching sessions: {str(e)}")
         await query.edit_message_text("Error fetching sessions. Please try again later.")
-
 
 # Main
 def main() -> None:
@@ -139,7 +130,6 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
     application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
     application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
-
 
     application.run_polling()
 
