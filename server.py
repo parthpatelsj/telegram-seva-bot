@@ -9,6 +9,8 @@ CORS(app)
 
 SCHEDULE_FILE = 'schedule.json'
 BREAKOUTS_FILE = 'breakouts.json'
+MENU_FILE = 'menu.json'
+
 
 
 # Connect to PostgreSQL function
@@ -23,6 +25,30 @@ def connect_db():
 @app.route('/')
 def home():
     return 'Welcome to the Seva Bot API!'
+
+
+# Utility function to load the menu
+def load_menu():
+    try:
+        with open(MENU_FILE, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {"menu": {}}
+
+# Endpoint: Get the full menu
+@app.route('/menu', methods=['GET'])
+def get_full_menu():
+    menu = load_menu()
+    return jsonify(menu)
+
+# Endpoint: Get meals for a specific date
+@app.route('/menu/<date>', methods=['GET'])
+def get_menu_by_date(date):
+    menu = load_menu().get('menu', {})
+    if date in menu:
+        return jsonify({date: menu[date]})
+    else:
+        return jsonify({"error": "Menu for this date not found"}), 404
 
 # Load the breakout schedule JSON
 def load_breakout_schedule():
