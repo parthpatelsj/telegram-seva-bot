@@ -29,7 +29,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         [InlineKeyboardButton("Wi-Fi Information", callback_data="wifi")],
         [InlineKeyboardButton("Transportation Details", callback_data="transportation")],
         [InlineKeyboardButton("Common Session Seating", callback_data="common_session_seating")],
-        [InlineKeyboardButton("Block Schedule", callback_data="block_schedule")],
+        [InlineKeyboardButton("Event Schedule", callback_data="schedule")],
         [InlineKeyboardButton("Today's Food Menu", callback_data="today_food_menu")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
