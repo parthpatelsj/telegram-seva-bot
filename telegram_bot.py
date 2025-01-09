@@ -118,7 +118,7 @@ def main() -> None:
     # Register handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("list_sevas", list_sevas))
-    application.add_handler(CallbackQueryHandler(join_seva_callback))
+    # application.add_handler(CallbackQueryHandler(join_seva_callback))
     application.add_handler(CommandHandler("wifi", wifi_information))
     application.add_handler(CommandHandler("transportation", transportation))
     application.add_handler(CommandHandler("common_session_seating", common_session_seating))
