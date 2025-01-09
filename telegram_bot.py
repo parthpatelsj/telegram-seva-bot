@@ -24,15 +24,29 @@ STATIC_RESPONSES = {
 }
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send a welcome message when the bot starts."""
+    """Send a welcome message with interactive buttons."""
+    keyboard = [
+        [InlineKeyboardButton("Wi-Fi Information", callback_data="wifi")],
+        [InlineKeyboardButton("Transportation Details", callback_data="transportation")],
+        [InlineKeyboardButton("Common Session Seating", callback_data="common_session_seating")],
+        [InlineKeyboardButton("Block Schedule", callback_data="block_schedule")],
+        [InlineKeyboardButton("Today's Food Menu", callback_data="today_food_menu")],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
     await update.message.reply_text(
-        "Welcome to the RKC 2025 Assistant Bot!\nUse the commands below to get information:\n"
-        "/wifi - Wi-Fi Information\n"
-        "/transportation - Transportation Details\n"
-        "/common_session_seating - Common Session Seating Info\n"
-        "/block_schedule - Block Schedule\n"
-        "/today_food_menu - Today's Food Menu"
+        "Welcome to the RKC 2025 Assistant Bot!\nSelect an option below to get information:",
+        reply_markup=reply_markup
     )
+
+async def handle_button_click(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle button clicks for static responses."""
+    query = update.callback_query
+    await query.answer()  # Acknowledge the button click
+
+    # Retrieve the corresponding response from STATIC_RESPONSES
+    response = STATIC_RESPONSES.get(query.data, "Sorry, I couldn't find the information.")
+    await query.edit_message_text(text=response)
 
 # Command handlers for static responses
 async def wifi_information(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -110,6 +124,8 @@ def main() -> None:
     application.add_handler(CommandHandler("common_session_seating", common_session_seating))
     application.add_handler(CommandHandler("block_schedule", block_schedule))
     application.add_handler(CommandHandler("today_food_menu", today_food_menu))
+    application.add_handler(CallbackQueryHandler(handle_button_click))
+
 
     # Run the bot
     application.run_polling()
