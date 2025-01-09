@@ -22,6 +22,7 @@ STATIC_RESPONSES = {
 
 # Command: Start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send a welcome message with interactive buttons."""
     keyboard = [
         [InlineKeyboardButton("Wi-Fi Information", callback_data="wifi")],
         [InlineKeyboardButton("Transportation Details", callback_data="transportation")],
@@ -38,20 +39,27 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 # Callback Handler for Static Responses
+async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()  # Acknowledge the button click
+    response = STATIC_RESPONSES.get(query.data, "Sorry, I couldn't find the information.")
+    await query.edit_message_text(text=response)
+
+# Callback Handler for Static Responses
 async def handle_button_click(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
     response = STATIC_RESPONSES.get(query.data, "Sorry, I couldn't find the information.")
     await query.edit_message_text(text=response)
 
-# Command: Event Schedule
+# Callback Handler: Event Schedule
 async def event_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
-    await query.answer()
+    await query.answer()  # Acknowledge the button click
     try:
         response = requests.get(f"{BASE_URL}/schedule")
         if response.status_code != 200:
-            await query.edit_message_text("Failed to fetch the event schedule.")
+            await query.edit_message_text("Failed to fetch the event schedule. Please try again later.")
             return
         schedule = response.json()
         message = "*Event Schedule*\n\n"
@@ -62,17 +70,18 @@ async def event_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             message += "\n"
         await query.edit_message_text(message, parse_mode="Markdown")
     except Exception as e:
-        logger.error(f"Error fetching schedule: {str(e)}")
-        await query.edit_message_text("Error fetching the schedule.")
+        logger.error(f"Error fetching event schedule: {str(e)}")
+        await query.edit_message_text("Error fetching the event schedule. Please try again later.")
 
-# Command: Breakout Schedule
+
+# Callback Handler: Breakout Schedule
 async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
-    await query.answer()
+    await query.answer()  # Acknowledge the button click
     try:
         response = requests.get(f"{BASE_URL}/mandals")
         if response.status_code != 200:
-            await query.edit_message_text("Failed to fetch breakout schedule.")
+            await query.edit_message_text("Failed to fetch breakout schedule. Please try again later.")
             return
         mandals = response.json()["mandals"]
         keyboard = [[InlineKeyboardButton(mandal, callback_data=f"mandal:{mandal}")] for mandal in mandals]
@@ -80,41 +89,21 @@ async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         await query.edit_message_text("Select a Mandal:", reply_markup=reply_markup)
     except Exception as e:
         logger.error(f"Error fetching breakout schedule: {str(e)}")
-        await query.edit_message_text("Error fetching breakout schedule.")
+        await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
 
-# Command: Mandals
-async def list_mandals(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    try:
-        response = requests.get(f"{BASE_URL}/mandals")
-        if response.status_code != 200:
-            await update.message.reply_text("Failed to fetch mandals. Please try again later.")
-            return
-        
-        mandals = response.json()["mandals"]
-        keyboard = [[InlineKeyboardButton(mandal, callback_data=f"mandal:{mandal}")] for mandal in mandals]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await update.message.reply_text("Select a Mandal:", reply_markup=reply_markup)
-    except Exception as e:
-        logger.error(f"Error fetching mandals: {str(e)}")
-        await update.message.reply_text("Error fetching mandals. Please try again later.")
 
 # Callback Handler: Mandal Selection
 async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     mandal_name = query.data.split(":")[1]
-
     try:
         response = requests.get(f"{BASE_URL}/mandals/{mandal_name}/tracks")
         if response.status_code != 200:
             await query.edit_message_text("Failed to fetch tracks. Please try again later.")
             return
-
         tracks = response.json()["tracks"]
         keyboard = [[InlineKeyboardButton(track, callback_data=f"track:{mandal_name}:{track}")] for track in tracks]
         reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await query.answer()
         await query.edit_message_text(f"Tracks for {mandal_name}:", reply_markup=reply_markup)
     except Exception as e:
         logger.error(f"Error fetching tracks: {str(e)}")
@@ -124,34 +113,33 @@ async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_
 async def handle_track_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     mandal_name, track_name = query.data.split(":")[1:]
-
     try:
         response = requests.get(f"{BASE_URL}/mandals/{mandal_name}/tracks/{track_name}/sessions")
         if response.status_code != 200:
             await query.edit_message_text("Failed to fetch sessions. Please try again later.")
             return
-
         sessions = response.json()["sessions"]
         message = f"Sessions for {track_name}:\n"
         for session in sessions:
             message += f"- {session['name']} ({session['time']} in Room {session.get('room', 'TBD')})\n"
-
-        await query.answer()
         await query.edit_message_text(message)
     except Exception as e:
         logger.error(f"Error fetching sessions: {str(e)}")
         await query.edit_message_text("Error fetching sessions. Please try again later.")
 
+
 # Main
 def main() -> None:
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
+    # Register handlers
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(handle_button_click))
+    application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|transportation|common_session_seating|today_food_menu)$"))
     application.add_handler(CallbackQueryHandler(event_schedule, pattern="^event_schedule$"))
     application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
     application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
     application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
+
 
     application.run_polling()
 
