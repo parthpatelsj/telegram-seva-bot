@@ -14,11 +14,41 @@ logger = logging.getLogger(__name__)
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 BASE_URL = "https://telegram-seva-bot-16ec0e933bf1.herokuapp.com"
 
+# Static responses
+STATIC_RESPONSES = {
+    "wifi": "RKC Delegates\nSSID: mandir\nPassword: (open) no password",
+    "transportation": "Today, shuttles to the hotel will begin after dinner at 8:30 PM till 9:30 PM.",
+    "common_session_seating": "Common session seating will be updated shortly!",
+    "block_schedule": "The block schedule is currently being finalized. Please check back later.",
+    "today_food_menu": "Today's menu includes:\nBreakfast: Idli & Sambar\nLunch: Paneer Tikka\nDinner: Veg Biryani & Raita."
+}
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a welcome message when the bot starts."""
     await update.message.reply_text(
-        "Welcome to the Seva Bot! Use /list_sevas to see available Seva slots."
+        "Welcome to the RKC 2025 Assistant Bot!\nUse the commands below to get information:\n"
+        "/wifi - Wi-Fi Information\n"
+        "/transportation - Transportation Details\n"
+        "/common_session_seating - Common Session Seating Info\n"
+        "/block_schedule - Block Schedule\n"
+        "/today_food_menu - Today's Food Menu"
     )
+
+# Command handlers for static responses
+async def wifi_information(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(STATIC_RESPONSES["wifi"])
+
+async def transportation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(STATIC_RESPONSES["transportation"])
+
+async def common_session_seating(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(STATIC_RESPONSES["common_session_seating"])
+
+async def block_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(STATIC_RESPONSES["block_schedule"])
+
+async def today_food_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(STATIC_RESPONSES["today_food_menu"])
 
 async def list_sevas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Fetch and display the list of Seva slots from the backend with sign-up buttons."""
@@ -75,6 +105,12 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("list_sevas", list_sevas))
     application.add_handler(CallbackQueryHandler(join_seva_callback))
+    application.add_handler(CommandHandler("wifi", wifi_information))
+    application.add_handler(CommandHandler("transportation", transportation))
+    application.add_handler(CommandHandler("common_session_seating", common_session_seating))
+    application.add_handler(CommandHandler("block_schedule", block_schedule))
+    application.add_handler(CommandHandler("today_food_menu", today_food_menu))
+
     # Run the bot
     application.run_polling()
 
