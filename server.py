@@ -1,10 +1,14 @@
 from flask import Flask, jsonify, request
 import psycopg2
 import os
+import json
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+
+SCHEDULE_FILE = 'schedule.json'
+
 
 # Connect to PostgreSQL function
 def connect_db():
@@ -18,6 +22,35 @@ def connect_db():
 @app.route('/')
 def home():
     return 'Welcome to the Seva Bot API!'
+
+# Utility function to load the schedule
+def load_schedule():
+    try:
+        with open(SCHEDULE_FILE, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []  # Return an empty list if the file doesn't exist
+
+# Utility function to save the schedule
+def save_schedule(schedule):
+    with open(SCHEDULE_FILE, 'w') as file:
+        json.dump(schedule, file, indent=2)
+
+# Route to get the full schedule
+@app.route('/schedule', methods=['GET'])
+def get_schedule():
+    schedule = load_schedule()
+    return jsonify(schedule)
+
+# Route to update the schedule
+@app.route('/schedule', methods=['POST'])
+def update_schedule():
+    new_schedule = request.json  # Expect the entire schedule to be sent in the request body
+    if not isinstance(new_schedule, list):
+        return jsonify({'error': 'Invalid schedule format. Expected a list of days with sessions.'}), 400
+
+    save_schedule(new_schedule)
+    return jsonify({'message': 'Schedule updated successfully!'})
 
 # Route to get all seva slots with volunteers
 @app.route('/sevas', methods=['GET'])

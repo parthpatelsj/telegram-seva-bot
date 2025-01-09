@@ -1,0 +1,47 @@
+[
+    {
+        "day": "Friday, January 17",
+        "sessions": [
+            { "time": "7:00 PM", "title": "Arrival / Registration" },
+            { "time": "7:30 PM", "title": "Aarti" },
+            { "time": "8:00 PM", "title": "Dinner" },
+            { "time": "8:45 PM", "title": "RKC 2025 - Arrival Program" },
+            { "time": "9:15 PM", "title": "Dessert" },
+            { "time": "9:45 PM", "title": "Depart to Utaro & Rest" }
+        ]
+    },
+    {
+        "day": "Saturday, January 18",
+        "sessions": [
+            { "time": "7:30 AM", "title": "Aarti" },
+            { "time": "8:00 AM", "title": "Darshan + Abhishek" },
+            { "time": "8:15 AM", "title": "Breakfast" },
+            { "time": "9:15 AM", "title": "Keynote 1" },
+            { "time": "10:15 AM", "title": "eBKY Team Breakouts" },
+            { "time": "11:15 AM", "title": "iBKY Team Breakouts" },
+            { "time": "12:15 PM", "title": "iBKY Group Photo" },
+            { "time": "12:30 PM", "title": "Lunch" },
+            { "time": "1:15 PM", "title": "eBKY Group Photo" },
+            { "time": "2:15 PM", "title": "Keynote 2 (Sabha Hall)" },
+            { "time": "3:15 PM", "title": "Goshti" },
+            { "time": "4:15 PM", "title": "Snack Break" },
+            { "time": "4:45 PM", "title": "BKY Center Planning" },
+            { "time": "6:00 PM", "title": "BKY Team Breakouts" },
+            { "time": "7:15 PM", "title": "Aarti" },
+            { "time": "7:45 PM", "title": "Dinner/Dessert" },
+            { "time": "8:30 PM", "title": "BKY Team Breakouts (Teams: B/KST-Ls, Local Analysts, Campus Sabha)" },
+            { "time": "9:30 PM", "title": "Depart to Utaro & Rest" }
+        ]
+    },
+    {
+        "day": "Sunday, January 19",
+        "sessions": [
+            { "time": "7:30 AM", "title": "Aarti" },
+            { "time": "8:15 AM", "title": "Breakfast" },
+            { "time": "9:15 AM", "title": "Keynote 3" },
+            { "time": "10:15 AM", "title": "Break" },
+            { "time": "11:15 AM", "title": "Keynote 4" },
+            { "time": "12:15 PM", "title": "Lunch and Departure" }
+        ]
+    }
+]

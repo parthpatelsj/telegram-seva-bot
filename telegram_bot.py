@@ -109,6 +109,33 @@ async def join_seva_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         logger.error(f"Error joining Seva: {str(e)}")
         await query.edit_message_text(text="Error joining Seva. Please try again later.")
 
+async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Fetch and display the schedule from the backend."""
+    try:
+        # Fetch the schedule from the backend
+        response = requests.get(f"{BASE_URL}/schedule")
+        if response.status_code != 200:
+            await update.message.reply_text("Failed to fetch the schedule. Please try again later.")
+            return
+        
+        schedule = response.json()
+
+        # Format the schedule as a message
+        message = "*Event Schedule*\n\n"
+        for day in schedule:
+            message += f"📅 *{day['day']}*\n"
+            for session in day['sessions']:
+                message += f"- {session['time']}: {session['title']}\n"
+            message += "\n"
+
+        # Send the schedule to the user
+        await update.message.reply_text(message, parse_mode="Markdown")
+
+    except Exception as e:
+        logger.error(f"Error fetching schedule: {str(e)}")
+        await update.message.reply_text("Error fetching the schedule. Please try again later.")
+
+
 
 
 def main() -> None:
@@ -124,6 +151,7 @@ def main() -> None:
     application.add_handler(CommandHandler("common_session_seating", common_session_seating))
     application.add_handler(CommandHandler("block_schedule", block_schedule))
     application.add_handler(CommandHandler("today_food_menu", today_food_menu))
+    application.add_handler(CommandHandler("schedule", schedule))
     application.add_handler(CallbackQueryHandler(handle_button_click))
 
 
