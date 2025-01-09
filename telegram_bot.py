@@ -53,24 +53,56 @@ async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_T
 
 # Callback Handler: Event Schedule
 async def event_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Prompt the user to select a specific day for the schedule."""
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
+
     try:
         response = requests.get(f"{BASE_URL}/schedule")
         if response.status_code != 200:
             await query.edit_message_text("Failed to fetch the event schedule. Please try again later.")
             return
+
         schedule = response.json()
-        message = "*📅 Event Schedule*\n\n"
-        for day in schedule:
-            message += f"📆 *{day['day']}*\n"
-            for session in day['sessions']:
-                message += f"⏰ {session['time']} - *{session['title']}* (Room: {session.get('room', 'TBD')})\n"
-            message += "\n"
-        await query.edit_message_text(message, parse_mode="Markdown")
+
+        # Create buttons for each available day
+        keyboard = [[InlineKeyboardButton(day["day"], callback_data=f"event_schedule_day:{day['day']}")] for day in schedule]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text("📅 Select a day to view the schedule:", reply_markup=reply_markup)
     except Exception as e:
         logger.error(f"Error fetching event schedule: {str(e)}")
         await query.edit_message_text("Error fetching the event schedule. Please try again later.")
+
+# Callback Handler: Day-Specific Schedule
+async def event_schedule_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Fetch and display the schedule for a specific day."""
+    query = update.callback_query
+    _, selected_day = query.data.split(":")
+    await query.answer()  # Acknowledge the button click
+
+    try:
+        response = requests.get(f"{BASE_URL}/schedule")
+        if response.status_code != 200:
+            await query.edit_message_text("Failed to fetch the event schedule. Please try again later.")
+            return
+
+        schedule = response.json()
+
+        # Find the selected day's schedule
+        selected_schedule = next((day for day in schedule if day["day"] == selected_day), None)
+        if not selected_schedule:
+            await query.edit_message_text(f"No schedule found for {selected_day}.")
+            return
+
+        # Format the schedule
+        message = f"*📅 Schedule for {selected_day}*\n\n"
+        for session in selected_schedule["sessions"]:
+            message += f"⏰ {session['time']} - *{session['title']}*\n"
+        await query.edit_message_text(message, parse_mode="Markdown")
+    except Exception as e:
+        logger.error(f"Error fetching schedule for {selected_day}: {str(e)}")
+        await query.edit_message_text(f"Error fetching the schedule for {selected_day}. Please try again later.")
 
 # Callback Handler: Breakout Schedule
 async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -183,6 +215,7 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|transportation|common_session_seating|today_food_menu)$"))
     application.add_handler(CallbackQueryHandler(event_schedule, pattern="^event_schedule$"))
+    application.add_handler(CallbackQueryHandler(event_schedule_day, pattern="^event_schedule_day:"))
     application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
     application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
     application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
