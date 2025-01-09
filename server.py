@@ -9,7 +9,7 @@ CORS(app)
 
 SCHEDULE_FILE = 'schedule.json'
 BREAKOUTS_FILE = 'breakouts.json'
-MENU_FILE = 'menu.json'
+MENU_FILE = 'food.json'
 
 
 
