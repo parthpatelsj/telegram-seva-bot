@@ -29,7 +29,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         [InlineKeyboardButton("📍 Common Session Seating", callback_data="common_session_seating")],
         [InlineKeyboardButton("📅 Event Schedule", callback_data="event_schedule")],
         [InlineKeyboardButton("📘 Breakout Schedule", callback_data="breakout_schedule")],
-        [InlineKeyboardButton("🍴 Food Menu", callback_data="food_menu")]
+        [InlineKeyboardButton("🍴 Food Menu", callback_data="food_menu")],
+        [InlineKeyboardButton("Your Year In Review", callback_data="year_in_review")],
+
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -206,6 +208,15 @@ async def food_menu_by_date(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         logger.error(f"Error fetching menu for {selected_date}: {str(e)}")
         await query.edit_message_text("Error fetching the menu for the selected date. Please try again later.")
 
+# Callback Handler: Year In Review
+async def year_in_review(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()  # Acknowledge the button click
+
+    await query.edit_message_text(
+        "📊 Opening your Year In Review...\n[Click here to view it](https://telegram-seva.netlify.app)",
+        parse_mode="Markdown"
+    )
 
 # Main
 def main() -> None:
@@ -221,6 +232,8 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
     application.add_handler(CallbackQueryHandler(food_menu, pattern="^food_menu$"))
     application.add_handler(CallbackQueryHandler(food_menu_by_date, pattern="^food_menu_date:"))
+    application.add_handler(CallbackQueryHandler(year_in_review, pattern="^year_in_review$"))
+
 
     application.run_polling()
 
