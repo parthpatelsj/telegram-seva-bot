@@ -30,7 +30,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         [InlineKeyboardButton("📅 Event Schedule", callback_data="event_schedule")],
         [InlineKeyboardButton("📘 Breakout Schedule", callback_data="breakout_schedule")],
         [InlineKeyboardButton("🍴 Food Menu", callback_data="food_menu")],
-        [InlineKeyboardButton("Your Year In Review", callback_data="year_in_review")],
+        [InlineKeyboardButton("Your Year In Review", web_app={"url": "https://telegram-seva.netlify.app"})]
 
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
