@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 import psycopg2
 import os
 import json
@@ -51,6 +51,16 @@ def get_menu_by_date(date):
         return jsonify({date: menu[date]})
     else:
         return jsonify({"error": "Menu for this date not found"}), 404
+    
+# Route to return the schedule image
+@app.route('/schedule_image', methods=['GET'])
+def get_schedule_image():
+    try:
+        # Path to the uploaded image file
+        image_path = 'schedule.jpg'
+        return send_file(image_path, mimetype='image/jpeg')
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 # Load the breakout schedule JSON
 def load_breakout_schedule():

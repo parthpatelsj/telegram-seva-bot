@@ -1,7 +1,7 @@
 import logging
 import os
 import requests
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputFile
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 
 # Enable logging
@@ -52,56 +52,24 @@ async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_T
 
 # Callback Handler: Event Schedule
 async def event_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Prompt the user to select a specific day for the schedule."""
+    """Send the schedule image as a response."""
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
 
     try:
-        response = requests.get(f"{BASE_URL}/schedule")
-        if response.status_code != 200:
-            await query.edit_message_text("Failed to fetch the event schedule. Please try again later.")
-            return
+        # Path to the uploaded image on your server
+        image_path = "schedule.jpg"
 
-        schedule = response.json()
-
-        # Create buttons for each available day
-        keyboard = [[InlineKeyboardButton(day["day"], callback_data=f"event_schedule_day:{day['day']}")] for day in schedule]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await query.edit_message_text("📅 Select a day to view the schedule:", reply_markup=reply_markup)
+        # Send the image
+        await context.bot.send_photo(
+            chat_id=query.message.chat_id,
+            photo=InputFile(image_path),
+            caption="📅 *Event Schedule*\nHere is the schedule for the event.",
+            parse_mode="Markdown"
+        )
     except Exception as e:
-        logger.error(f"Error fetching event schedule: {str(e)}")
-        await query.edit_message_text("Error fetching the event schedule. Please try again later.")
-
-# Callback Handler: Day-Specific Schedule
-async def event_schedule_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Fetch and display the schedule for a specific day."""
-    query = update.callback_query
-    _, selected_day = query.data.split(":")
-    await query.answer()  # Acknowledge the button click
-
-    try:
-        response = requests.get(f"{BASE_URL}/schedule")
-        if response.status_code != 200:
-            await query.edit_message_text("Failed to fetch the event schedule. Please try again later.")
-            return
-
-        schedule = response.json()
-
-        # Find the selected day's schedule
-        selected_schedule = next((day for day in schedule if day["day"] == selected_day), None)
-        if not selected_schedule:
-            await query.edit_message_text(f"No schedule found for {selected_day}.")
-            return
-
-        # Format the schedule
-        message = f"*📅 Schedule for {selected_day}*\n\n"
-        for session in selected_schedule["sessions"]:
-            message += f"⏰ {session['time']} - *{session['title']}*\n"
-        await query.edit_message_text(message, parse_mode="Markdown")
-    except Exception as e:
-        logger.error(f"Error fetching schedule for {selected_day}: {str(e)}")
-        await query.edit_message_text(f"Error fetching the schedule for {selected_day}. Please try again later.")
+        logger.error(f"Error sending schedule image: {str(e)}")
+        await query.edit_message_text("Error retrieving the schedule. Please try again later.")
 
 # Callback Handler: Mandal Selection
 async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
