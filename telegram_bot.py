@@ -340,28 +340,6 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|today_food_menu)$"))
     application.add_handler(CallbackQueryHandler(event_schedule, pattern="^event_schedule$"))
-    application.add_handler(CallbackQueryHandler(event_schedule_day, pattern="^event_schedule_day:"))
-    application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
-    application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
-    application.add_handler(CallbackQueryHandler(food_menu, pattern="^food_menu$"))
-    application.add_handler(CallbackQueryHandler(food_menu_by_date, pattern="^food_menu_date:"))
-    application.add_handler(CallbackQueryHandler(year_in_review, pattern="^year_in_review$"))
-    application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
-    application.add_handler(CallbackQueryHandler(confirm_breakout, pattern="^confirm_breakout:"))
-
-    # Add MessageHandler for full name input
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_full_name))
-
-    # Start the bot
-    application.run_polling()
-def main() -> None:
-    application = Application.builder().token(TELEGRAM_TOKEN).build()
-
-    # Register handlers
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|common_session_seating|today_food_menu)$"))
-    application.add_handler(CallbackQueryHandler(event_schedule, pattern="^event_schedule$"))
-    application.add_handler(CallbackQueryHandler(event_schedule_day, pattern="^event_schedule_day:"))
     application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
     application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
     application.add_handler(CallbackQueryHandler(food_menu, pattern="^food_menu$"))
