@@ -1,120 +1,62 @@
 {
-    "menu": {
-      "01-16-25": {
-        "breakfast": {
-          "items": [
-            { "name": "Thiki Puri", "type": "Fresh/Hot Item" },
-            { "name": "Thepla", "type": "Dry Snack" },
-            { "name": "Cinnamon Rolls", "type": "Baked Goods" },
-            { "name": "Cinnamon Toast Crunch", "type": "Cereal" },
-            { "name": "Apples, Bananas", "type": "Fresh Fruit" },
-            { "name": "Yogurt Parfait Cups", "type": "Misc" },
-            { "name": "Milk", "type": "Drink" },
-            { "name": "Orange Juice", "type": "Drink" },
-            { "name": "Chai/Hot Milk + Nescafe + Sugar + Hot Chocolate Packets", "type": "Drink" }
-          ],
-          "timing": "7:45 AM"
-        },
-        "lunch": {
-          "items": [
-            { "name": "Pizza", "type": "Main Item" },
-            { "name": "Deep River Chips", "type": "Main Item" },
-            { "name": "Cut Bhinda Potato Dry", "type": "Main Item" },
-            { "name": "Pulav & Yogurt", "type": "Main Item" },
-            { "name": "Kachori or Cutlets", "type": "Side Item" },
-            { "name": "Idada", "type": "Side Item" },
-            { "name": "Fryams/Papdi", "type": "Misc" },
-            { "name": "Lemonade", "type": "Drink" }
-          ],
-          "timing": "12:00 PM"
-        },
-        "dinner": {
-          "items": [
-            { "name": "Pizza", "type": "Main Item" },
-            { "name": "Greek Salad", "type": "Main Item" },
-            { "name": "Penne Arrabiata", "type": "Main Item" },
-            { "name": "Sauteed Veggies (Mushrooms, Bell Pepper, Olives, Corn)", "type": "Main Item" },
-            { "name": "Pita Breadsticks/Foccacia", "type": "Side Item" },
-            { "name": "Santa Fe Salad", "type": "Side Item" },
-            { "name": "Lemonade", "type": "Drink" }
-          ],
-          "timing": "7:30 PM"
-        }
+  "menu": {
+    "01-17-25": {
+      "dinner": {
+        "items": [
+          { "name": "Pizza", "type": "Main Item" },
+          { "name": "Greek Salad", "type": "Side Item" },
+          { "name": "Penne Arrabiata", "type": "Main Item" },
+          { "name": "Lemonade", "type": "Drink" }
+        ],
+        "timing": "7:30 PM"
+      }
+    },
+    "01-18-25": {
+      "breakfast": {
+        "items": [
+          { "name": "Dhokla", "type": "Fresh/Hot Item" },
+          { "name": "Methi Thepla", "type": "Dry Snack" },
+          { "name": "Croissants", "type": "Baked Goods" },
+          { "name": "Milk", "type": "Drink" }
+        ],
+        "timing": "7:45 AM"
       },
-      "01-17-25": {
-        "breakfast": {
-          "items": [
-            { "name": "Sev Khamani", "type": "Fresh/Hot Item" },
-            { "name": "Bhakhri", "type": "Dry Snack" },
-            { "name": "Bagels & Cream Cheese", "type": "Baked Goods" },
-            { "name": "Cheerios", "type": "Cereal" },
-            { "name": "Apples, Bananas", "type": "Fresh Fruit" },
-            { "name": "Milk", "type": "Drink" },
-            { "name": "Orange Juice", "type": "Drink" },
-            { "name": "Chai/Hot Milk + Nescafe + Sugar + Hot Chocolate Packets", "type": "Drink" }
-          ],
-          "timing": "7:45 AM"
-        },
-        "lunch": {
-          "items": [
-            { "name": "Paneer Tikka Masala", "type": "Main Item" },
-            { "name": "Biryani", "type": "Main Item" },
-            { "name": "Raita", "type": "Side Item" },
-            { "name": "Fryums", "type": "Side Item" },
-            { "name": "Kachumber Salad", "type": "Side Item" },
-            { "name": "Naan", "type": "Side Item" },
-            { "name": "Mango Lassi", "type": "Drink" }
-          ],
-          "timing": "12:00 PM"
-        },
-        "dinner": {
-          "items": [
-            { "name": "Tacos (Soft & Hard Shell)", "type": "Main Item" },
-            { "name": "Refried Beans", "type": "Main Item" },
-            { "name": "Mexican Rice", "type": "Main Item" },
-            { "name": "Salsa", "type": "Side Item" },
-            { "name": "Guacamole", "type": "Side Item" },
-            { "name": "Lemonade", "type": "Drink" }
-          ],
-          "timing": "7:30 PM"
-        }
+      "lunch": {
+        "items": [
+          { "name": "Chole", "type": "Main Item" },
+          { "name": "Bhature", "type": "Main Item" },
+          { "name": "Raita", "type": "Side Item" },
+          { "name": "Lassi", "type": "Drink" }
+        ],
+        "timing": "12:00 PM"
       },
-      "01-18-25": {
-        "breakfast": {
-          "items": [
-            { "name": "Dhokla", "type": "Fresh/Hot Item" },
-            { "name": "Methi Thepla", "type": "Dry Snack" },
-            { "name": "Croissants", "type": "Baked Goods" },
-            { "name": "Froot Loops", "type": "Cereal" },
-            { "name": "Apples, Bananas", "type": "Fresh Fruit" },
-            { "name": "Milk", "type": "Drink" },
-            { "name": "Orange Juice", "type": "Drink" },
-            { "name": "Chai/Hot Milk + Nescafe + Sugar + Hot Chocolate Packets", "type": "Drink" }
-          ],
-          "timing": "7:45 AM"
-        },
-        "lunch": {
-          "items": [
-            { "name": "Chole", "type": "Main Item" },
-            { "name": "Bhature", "type": "Main Item" },
-            { "name": "Rice", "type": "Side Item" },
-            { "name": "Kachumber Salad", "type": "Side Item" },
-            { "name": "Raita", "type": "Side Item" },
-            { "name": "Lassi", "type": "Drink" }
-          ],
-          "timing": "12:00 PM"
-        },
-        "dinner": {
-          "items": [
-            { "name": "Pizza", "type": "Main Item" },
-            { "name": "Greek Salad", "type": "Side Item" },
-            { "name": "Pasta", "type": "Main Item" },
-            { "name": "Sauteed Veggies", "type": "Side Item" },
-            { "name": "Lemonade", "type": "Drink" }
-          ],
-          "timing": "7:30 PM"
-        }
+      "dinner": {
+        "items": [
+          { "name": "Tacos (Soft & Hard Shell)", "type": "Main Item" },
+          { "name": "Mexican Rice", "type": "Main Item" },
+          { "name": "Guacamole", "type": "Side Item" },
+          { "name": "Lemonade", "type": "Drink" }
+        ],
+        "timing": "7:30 PM"
+      }
+    },
+    "01-19-25": {
+      "breakfast": {
+        "items": [
+          { "name": "Bagels & Cream Cheese", "type": "Baked Goods" },
+          { "name": "Cheerios", "type": "Cereal" },
+          { "name": "Milk", "type": "Drink" }
+        ],
+        "timing": "8:15 AM"
+      },
+      "lunch": {
+        "items": [
+          { "name": "Paneer Tikka Masala", "type": "Main Item" },
+          { "name": "Naan", "type": "Side Item" },
+          { "name": "Mango Lassi", "type": "Drink" }
+        ],
+        "timing": "12:15 PM"
       }
     }
   }
-  
+}
