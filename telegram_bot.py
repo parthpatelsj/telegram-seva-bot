@@ -280,6 +280,7 @@ async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         logger.error(f"Error fetching breakout schedule: {str(e)}")
         await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
 
+
 # Callback Handler: Confirm Breakout
 async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
@@ -322,6 +323,48 @@ async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         logger.error(f"Error confirming breakout details: {str(e)}")
         await query.edit_message_text("Error confirming breakout details. Please try again later.")
 
+# Message Handler: Process Full Name Input
+async def handle_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Check if the bot is awaiting a full name input
+    if not context.user_data.get("awaiting_full_name"):
+        return  # Ignore unrelated messages
+
+    # Reset state
+    context.user_data["awaiting_full_name"] = False
+
+    # Extract full name from user input
+    full_name = update.message.text.strip()
+    if " " not in full_name:
+        await update.message.reply_text("Please provide both First Name and Last Name, separated by a space.")
+        return
+
+    first_name, last_name = full_name.split(" ", 1)
+
+    # Send request to search_by_full_name API
+    try:
+        response = requests.post(f"{BASE_URL}/search_by_full_name", json={"First Name": first_name, "Last Name": last_name})
+
+        if response.status_code != 200:
+            await update.message.reply_text("Error fetching breakout details. Please try again later.")
+            return
+
+        data = response.json()
+        if "options" in data:
+            # Multiple matches found; ask for confirmation
+            keyboard = [
+                [InlineKeyboardButton(f"{opt['First Name']} {opt['Last Name']} ({opt['Center']}, {opt['Primary Seva']})",
+                                      callback_data=f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}")]
+                for opt in data["options"]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await update.message.reply_text(data["message"], reply_markup=reply_markup)
+        else:
+            await update.message.reply_text("No breakout sessions found for the provided name.")
+    except Exception as e:
+        logger.error(f"Error searching breakout by full name: {str(e)}")
+        await update.message.reply_text("Error searching breakout by full name. Please try again later.")
+
+
 # Main
 def main() -> None:
     application = Application.builder().token(TELEGRAM_TOKEN).build()
@@ -338,8 +381,8 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(year_in_review, pattern="^year_in_review$"))
     application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
     application.add_handler(CallbackQueryHandler(confirm_breakout, pattern="^confirm_breakout:"))
-    application.add_handler(CommandHandler("search_by_full_name", search_by_full_name))
-    application.add_handler(CommandHandler("search_breakouts", breakout_schedule))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_full_name))
+
 
 
     application.run_polling()
