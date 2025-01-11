@@ -103,46 +103,6 @@ async def event_schedule_day(update: Update, context: ContextTypes.DEFAULT_TYPE)
         logger.error(f"Error fetching schedule for {selected_day}: {str(e)}")
         await query.edit_message_text(f"Error fetching the schedule for {selected_day}. Please try again later.")
 
-# Callback Handler: Breakout Schedule
-async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    query = update.callback_query
-    await query.answer()  # Acknowledge the button click
-
-    try:
-        # Extract Telegram user's first name
-        user_first_name = update.effective_user.first_name
-
-        # Fetch breakout matches using the first name
-        response = requests.post(f"{BASE_URL}/search_breakouts", json={"first_name": user_first_name})
-
-        if response.status_code != 200:
-            await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
-            return
-
-        data = response.json()
-
-        # Check if the response requires user input (e.g., full name needed)
-        if "prompt" in data:
-            await query.edit_message_text(
-                f"{data['message']}\n\n{data['prompt']}",
-                parse_mode="Markdown"
-            )
-        elif "options" in data:
-            # Multiple or single match found; confirm identity
-            keyboard = [
-                [InlineKeyboardButton(f"{opt['First Name']} {opt['Last Name']} ({opt['Center']}, {opt['Primary Seva']})",
-                                      callback_data=f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}")]
-                for opt in data["options"]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(data["message"], reply_markup=reply_markup)
-        else:
-            await query.edit_message_text("No breakout sessions found for you.")
-    except Exception as e:
-        logger.error(f"Error fetching breakout schedule: {str(e)}")
-        await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
-
-
 # Callback Handler: Mandal Selection
 async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
@@ -238,7 +198,49 @@ async def year_in_review(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         parse_mode="Markdown"
     )
 
-# Callback Handler: Fetch and Confirm Breakout Schedule
+# Message Handler: Process Full Name Input
+async def search_by_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not context.user_data.get("awaiting_full_name"):
+        # Ignore messages not related to full name search
+        return
+
+    # Reset state
+    context.user_data["awaiting_full_name"] = False
+
+    # Extract full name
+    full_name = update.message.text.strip()
+    if " " not in full_name:
+        await update.message.reply_text("Please provide both First Name and Last Name, separated by a space.")
+        return
+
+    first_name, last_name = full_name.split(" ", 1)
+
+    # Send request to search_by_full_name API
+    try:
+        response = requests.post(f"{BASE_URL}/search_by_full_name", json={"First Name": first_name, "Last Name": last_name})
+
+        if response.status_code != 200:
+            await update.message.reply_text("Error fetching breakout details. Please try again later.")
+            return
+
+        data = response.json()
+        if "options" in data:
+            # Multiple matches found; ask for confirmation
+            keyboard = [
+                [InlineKeyboardButton(f"{opt['First Name']} {opt['Last Name']} ({opt['Center']}, {opt['Primary Seva']})",
+                                      callback_data=f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}")]
+                for opt in data["options"]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await update.message.reply_text(data["message"], reply_markup=reply_markup)
+        else:
+            await update.message.reply_text("No breakout sessions found for the provided name.")
+    except Exception as e:
+        logger.error(f"Error searching breakout by full name: {str(e)}")
+        await update.message.reply_text("Error searching breakout by full name. Please try again later.")
+
+
+# Callback Handler: Breakout Schedule
 async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
@@ -258,6 +260,7 @@ async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
         # Check if the response requires user input (e.g., full name needed)
         if "prompt" in data:
+            context.user_data["awaiting_full_name"] = True  # Set state for expecting full name
             await query.edit_message_text(
                 f"{data['message']}\n\n{data['prompt']}",
                 parse_mode="Markdown"
@@ -328,7 +331,6 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|common_session_seating|today_food_menu)$"))
     application.add_handler(CallbackQueryHandler(event_schedule, pattern="^event_schedule$"))
     application.add_handler(CallbackQueryHandler(event_schedule_day, pattern="^event_schedule_day:"))
-    application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
     application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
     application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
     application.add_handler(CallbackQueryHandler(food_menu, pattern="^food_menu$"))
@@ -336,7 +338,8 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(year_in_review, pattern="^year_in_review$"))
     application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
     application.add_handler(CallbackQueryHandler(confirm_breakout, pattern="^confirm_breakout:"))
-
+    application.add_handler(CommandHandler("search_by_full_name", search_by_full_name))
+    application.add_handler(CommandHandler("search_breakouts", breakout_schedule))
 
 
     application.run_polling()
