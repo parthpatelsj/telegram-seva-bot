@@ -15,7 +15,6 @@ BASE_URL = "https://telegram-seva-bot-16ec0e933bf1.herokuapp.com"
 
 STATIC_RESPONSES = {
     "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
-    "transportation": "🚌 *Transportation Details*\nToday, shuttles to the hotel will begin after dinner at *8:30 PM* till *9:30 PM*.",
     "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!",
     "today_food_menu": "🍴 *Today's Food Menu*\n- 🥞 *Breakfast*: Idli & Sambar\n- 🥗 *Lunch*: Paneer Tikka\n- 🍛 *Dinner*: Veg Biryani & Raita"
 }
@@ -25,7 +24,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a welcome message with interactive buttons."""
     keyboard = [
         [InlineKeyboardButton("📶 Wi-Fi Information", callback_data="wifi")],
-        [InlineKeyboardButton("🚌 Transportation Details", callback_data="transportation")],
         [InlineKeyboardButton("📍 Common Session Seating", callback_data="common_session_seating")],
         [InlineKeyboardButton("📅 Event Schedule", callback_data="event_schedule")],
         [InlineKeyboardButton("📘 Breakout Schedule", callback_data="breakout_schedule")],
@@ -47,7 +45,6 @@ async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_T
     await query.answer()
     response = {
         "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
-        "transportation": "🚌 *Transportation Details*\nToday, shuttles to the hotel will begin after dinner at *8:30 PM* till *9:30 PM*.",
         "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!"
     }.get(query.data, "Sorry, I couldn't find the information.")
     await query.edit_message_text(text=response, parse_mode="Markdown")
@@ -328,7 +325,7 @@ def main() -> None:
 
     # Register handlers
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|transportation|common_session_seating|today_food_menu)$"))
+    application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|common_session_seating|today_food_menu)$"))
     application.add_handler(CallbackQueryHandler(event_schedule, pattern="^event_schedule$"))
     application.add_handler(CallbackQueryHandler(event_schedule_day, pattern="^event_schedule_day:"))
     application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
