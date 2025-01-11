@@ -110,18 +110,41 @@ async def event_schedule_day(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
+
     try:
-        response = requests.get(f"{BASE_URL}/mandals")
+        # Extract Telegram user's first name
+        user_first_name = update.effective_user.first_name
+
+        # Fetch breakout matches using the first name
+        response = requests.post(f"{BASE_URL}/search_breakouts", json={"first_name": user_first_name})
+
         if response.status_code != 200:
-            await query.edit_message_text("Failed to fetch breakout schedule. Please try again later.")
+            await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
             return
-        mandals = response.json()["mandals"]
-        keyboard = [[InlineKeyboardButton(f"📘 {mandal}", callback_data=f"mandal:{mandal}")] for mandal in mandals]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text("👥 Select a Mandal for Breakout Sessions:", reply_markup=reply_markup)
+
+        data = response.json()
+
+        # Check if the response requires user input (e.g., full name needed)
+        if "prompt" in data:
+            await query.edit_message_text(
+                f"{data['message']}\n\n{data['prompt']}",
+                parse_mode="Markdown"
+            )
+        elif "options" in data:
+            # Multiple or single match found; confirm identity
+            keyboard = [
+                [InlineKeyboardButton(f"{opt['First Name']} {opt['Last Name']} ({opt['Center']}, {opt['Primary Seva']})",
+                                      callback_data=f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}")]
+                for opt in data["options"]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(data["message"], reply_markup=reply_markup)
+        else:
+            await query.edit_message_text("No breakout sessions found for you.")
     except Exception as e:
         logger.error(f"Error fetching breakout schedule: {str(e)}")
         await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
+
 
 # Callback Handler: Mandal Selection
 async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -218,6 +241,87 @@ async def year_in_review(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         parse_mode="Markdown"
     )
 
+# Callback Handler: Fetch and Confirm Breakout Schedule
+async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()  # Acknowledge the button click
+
+    try:
+        # Extract Telegram user's first name
+        user_first_name = update.effective_user.first_name
+
+        # Fetch breakout matches using the first name
+        response = requests.post(f"{BASE_URL}/search_breakouts", json={"first_name": user_first_name})
+
+        if response.status_code != 200:
+            await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
+            return
+
+        data = response.json()
+
+        # Check if the response requires user input (e.g., full name needed)
+        if "prompt" in data:
+            await query.edit_message_text(
+                f"{data['message']}\n\n{data['prompt']}",
+                parse_mode="Markdown"
+            )
+        elif "options" in data:
+            # Multiple or single match found; confirm identity
+            keyboard = [
+                [InlineKeyboardButton(f"{opt['First Name']} {opt['Last Name']} ({opt['Center']}, {opt['Primary Seva']})",
+                                      callback_data=f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}")]
+                for opt in data["options"]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(data["message"], reply_markup=reply_markup)
+        else:
+            await query.edit_message_text("No breakout sessions found for you.")
+    except Exception as e:
+        logger.error(f"Error fetching breakout schedule: {str(e)}")
+        await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
+
+# Callback Handler: Confirm Breakout
+async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()
+
+    try:
+        # Extract confirmation details from callback data
+        _, first_name, last_name, center, primary_seva = query.data.split(":")
+
+        # Confirm and fetch breakout details
+        response = requests.post(
+            f"{BASE_URL}/confirm_breakout",
+            json={
+                "First Name": first_name,
+                "Last Name": last_name,
+                "Center": center,
+                "Primary Seva": primary_seva
+            }
+        )
+
+        if response.status_code != 200:
+            await query.edit_message_text("Error confirming breakout details. Please try again later.")
+            return
+
+        data = response.json()
+        details = data.get("details", {})
+        message = (
+            f"*Breakout Details Confirmed!*\n\n"
+            f"👤 *Name:* {details.get('First Name')} {details.get('Last Name')}\n"
+            f"🏠 *Center:* {details.get('Center')}\n"
+            f"🛠 *Primary Seva:* {details.get('Primary Seva')}\n\n"
+            f"📘 *Breakout Sessions:*\n"
+            f"🔹 *Breakout #1:* {details.get('Breakout #1')}\n"
+            f"🔹 *Breakout #2:* {details.get('Breakout #2')}\n"
+            f"🔹 *Breakout #3:* {details.get('Breakout #3')}\n"
+            f"🔹 *Goshthi:* {details.get('Goshthi')}"
+        )
+        await query.edit_message_text(message, parse_mode="Markdown")
+    except Exception as e:
+        logger.error(f"Error confirming breakout details: {str(e)}")
+        await query.edit_message_text("Error confirming breakout details. Please try again later.")
+
 # Main
 def main() -> None:
     application = Application.builder().token(TELEGRAM_TOKEN).build()
@@ -233,6 +337,9 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(food_menu, pattern="^food_menu$"))
     application.add_handler(CallbackQueryHandler(food_menu_by_date, pattern="^food_menu_date:"))
     application.add_handler(CallbackQueryHandler(year_in_review, pattern="^year_in_review$"))
+    application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
+    application.add_handler(CallbackQueryHandler(confirm_breakout, pattern="^confirm_breakout:"))
+
 
 
     application.run_polling()

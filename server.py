@@ -3,6 +3,7 @@ import psycopg2
 import os
 import json
 from flask_cors import CORS
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
@@ -10,6 +11,7 @@ CORS(app)
 SCHEDULE_FILE = 'schedule.json'
 BREAKOUTS_FILE = 'breakouts.json'
 MENU_FILE = 'food.json'
+BREAKOUT_FILES = ['ebreakouts.csv', 'ibreakouts.csv']
 
 
 
@@ -125,6 +127,102 @@ def update_schedule():
 
     save_schedule(new_schedule)
     return jsonify({'message': 'Schedule updated successfully!'})
+
+
+# Utility function to load breakout data
+def load_combined_breakouts():
+    dataframes = [pd.read_csv(file) for file in BREAKOUT_FILES]
+    return pd.concat(dataframes, ignore_index=True)
+
+# Load breakouts into memory
+combined_breakouts = load_combined_breakouts()
+
+@app.route('/search_breakouts', methods=['POST'])
+def search_breakouts():
+    user_first_name = request.json.get('first_name', '').strip().title()
+    
+    if not user_first_name:
+        return jsonify({"message": "Please provide your first name."}), 400
+
+    matches = combined_breakouts[combined_breakouts['First Name'] == user_first_name]
+
+    if matches.empty:
+        return jsonify({
+            "message": "No match found for your name. Please provide your full name (First and Last).",
+            "prompt": "Enter your First Name and Last Name to search."
+        })
+    
+    options = matches[['First Name', 'Last Name', 'Center', 'Primary Seva']].to_dict(orient='records')
+    return jsonify({
+        "message": "Please confirm your identity from the options below.",
+        "options": options
+    })
+
+
+@app.route('/confirm_breakout', methods=['POST'])
+def confirm_breakout():
+    user_data = request.json
+    first_name = user_data.get('First Name', '').strip().title()
+    last_name = user_data.get('Last Name', '').strip().title()
+    center = user_data.get('Center', '').strip()
+    seva = user_data.get('Primary Seva', '').strip()
+
+    if not all([first_name, last_name, center, seva]):
+        return jsonify({"message": "Please provide complete details to confirm your identity."}), 400
+
+    confirmed_person = combined_breakouts[
+        (combined_breakouts['First Name'] == first_name) &
+        (combined_breakouts['Last Name'] == last_name) &
+        (combined_breakouts['Center'] == center) &
+        (combined_breakouts['Primary Seva'] == seva)
+    ]
+
+    if confirmed_person.empty:
+        return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
+
+    person = confirmed_person.iloc[0]
+    breakout_details = {
+        "First Name": person['First Name'],
+        "Last Name": person['Last Name'],
+        "Center": person['Center'],
+        "Primary Seva": person['Primary Seva'],
+        "Breakout #1": person.get('Breakout #1', 'N/A'),
+        "Breakout #2": person.get('Breakout #2', 'N/A'),
+        "Breakout #3": person.get('Breakout #3', 'N/A'),
+        "Goshthi": person.get('Goshthi', 'N/A')
+    }
+    return jsonify({
+        "message": "Breakout details confirmed!",
+        "details": breakout_details
+    })
+
+
+@app.route('/search_by_full_name', methods=['POST'])
+def search_by_full_name():
+    user_data = request.json
+    first_name = user_data.get('First Name', '').strip().title()
+    last_name = user_data.get('Last Name', '').strip().title()
+
+    if not first_name or not last_name:
+        return jsonify({"message": "Please provide both First Name and Last Name."}), 400
+
+    matches = combined_breakouts[
+        (combined_breakouts['First Name'] == first_name) &
+        (combined_breakouts['Last Name'] == last_name)
+    ]
+
+    if matches.empty:
+        return jsonify({"message": "No match found for the provided name. Please check your details or contact support."})
+    
+    options = matches[['First Name', 'Last Name', 'Center', 'Primary Seva']].to_dict(orient='records')
+    return jsonify({
+        "message": "Please confirm your identity from the options below.",
+        "options": options
+    })
+
+
+
+### Stuff from seva
 
 # Route to get all seva slots with volunteers
 @app.route('/sevas', methods=['GET'])
