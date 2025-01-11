@@ -1,6 +1,7 @@
 import logging
 import os
 import requests
+from io import BytesIO
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputFile
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 
@@ -50,27 +51,33 @@ async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_T
     await query.edit_message_text(text=response, parse_mode="Markdown")
 
 
-# Callback Handler: Event Schedule
 async def event_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send the schedule image as a response."""
+    """Fetch and send the schedule image from the server."""
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
 
     try:
-        # Path to the uploaded image on your server
-        image_path = "schedule.jpg"
+        # Fetch the image from the server
+        response = requests.get(f"{BASE_URL}/schedule_image")
+        if response.status_code != 200:
+            logger.error(f"Failed to fetch schedule image. Status code: {response.status_code}")
+            await query.edit_message_text("Failed to retrieve the schedule. Please try again later.")
+            return
 
-        # Send the image
+        # Convert the image content to a file-like object
+        image_data = BytesIO(response.content)
+        image_data.seek(0)
+
+        # Send the image to the user
         await context.bot.send_photo(
             chat_id=query.message.chat_id,
-            photo=InputFile(image_path),
+            photo=InputFile(image_data, filename="schedule.jpg"),
             caption="📅 *Event Schedule*\nHere is the schedule for the event.",
             parse_mode="Markdown"
         )
     except Exception as e:
-        logger.error(f"Error sending schedule image: {str(e)}")
+        logger.error(f"Error retrieving and sending schedule image: {str(e)}")
         await query.edit_message_text("Error retrieving the schedule. Please try again later.")
-
 # Callback Handler: Mandal Selection
 async def handle_mandal_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
