@@ -15,7 +15,7 @@ BASE_URL = "https://telegram-seva-bot-16ec0e933bf1.herokuapp.com"
 
 STATIC_RESPONSES = {
     "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
-    "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!",
+    # "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!",
     "today_food_menu": "🍴 *Today's Food Menu*\n- 🥞 *Breakfast*: Idli & Sambar\n- 🥗 *Lunch*: Paneer Tikka\n- 🍛 *Dinner*: Veg Biryani & Raita"
 }
 
@@ -24,7 +24,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a welcome message with interactive buttons."""
     keyboard = [
         [InlineKeyboardButton("📶 Wi-Fi Information", callback_data="wifi")],
-        [InlineKeyboardButton("📍 Common Session Seating", callback_data="common_session_seating")],
+        # [InlineKeyboardButton("📍 Common Session Seating", callback_data="common_session_seating")],
         [InlineKeyboardButton("📅 Event Schedule", callback_data="event_schedule")],
         [InlineKeyboardButton("📘 Breakout Schedule", callback_data="breakout_schedule")],
         [InlineKeyboardButton("🍴 Food Menu", callback_data="food_menu")],
@@ -45,7 +45,7 @@ async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_T
     await query.answer()
     response = {
         "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
-        "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!"
+        # "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!"
     }.get(query.data, "Sorry, I couldn't find the information.")
     await query.edit_message_text(text=response, parse_mode="Markdown")
 
@@ -365,7 +365,27 @@ async def handle_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await update.message.reply_text("Error searching breakout by full name. Please try again later.")
 
 
-# Main
+def main() -> None:
+    application = Application.builder().token(TELEGRAM_TOKEN).build()
+
+    # Register handlers
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|today_food_menu)$"))
+    application.add_handler(CallbackQueryHandler(event_schedule, pattern="^event_schedule$"))
+    application.add_handler(CallbackQueryHandler(event_schedule_day, pattern="^event_schedule_day:"))
+    application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
+    application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
+    application.add_handler(CallbackQueryHandler(food_menu, pattern="^food_menu$"))
+    application.add_handler(CallbackQueryHandler(food_menu_by_date, pattern="^food_menu_date:"))
+    application.add_handler(CallbackQueryHandler(year_in_review, pattern="^year_in_review$"))
+    application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
+    application.add_handler(CallbackQueryHandler(confirm_breakout, pattern="^confirm_breakout:"))
+
+    # Add MessageHandler for full name input
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_full_name))
+
+    # Start the bot
+    application.run_polling()
 def main() -> None:
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -381,11 +401,13 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(year_in_review, pattern="^year_in_review$"))
     application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
     application.add_handler(CallbackQueryHandler(confirm_breakout, pattern="^confirm_breakout:"))
+
+    # Add MessageHandler for full name input
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_full_name))
 
-
-
+    # Start the bot
     application.run_polling()
+
 
 if __name__ == "__main__":
     main()
