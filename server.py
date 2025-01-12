@@ -46,18 +46,19 @@ def get_full_menu():
     menu = load_menu()
     return jsonify(menu)
 
+# Endpoint: Get meals for a specific date
 @app.route('/menu/<date>', methods=['GET'])
 def get_menu_by_date(date):
     menu = load_menu().get('menu', {})
-    
+
     # Decode the URL-encoded date
     decoded_date = unquote(date).strip()
     
     # Log for debugging
     print(f"Received date (decoded): {decoded_date}")
-    print(f"Available dates: {list(menu.keys())}")
-    
-    # Match the decoded date
+    print(f"Available dates in menu: {list(menu.keys())}")
+
+    # Match the decoded date with the JSON keys
     if decoded_date in menu:
         return jsonify({decoded_date: menu[decoded_date]})
     else:
