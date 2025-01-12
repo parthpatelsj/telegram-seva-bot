@@ -51,14 +51,14 @@ def get_full_menu():
 def get_menu_by_date(date):
     menu = load_menu().get('menu', {})
 
-    # Decode the date string from URL-encoded format (e.g., "Friday%201/17" to "Friday 1/17")
-    decoded_date = unquote(date)
-    print(f"Received date: {decoded_date}")  # Debugging log
+    # Log the received date and available keys for debugging
+    print(f"Received date: {date}")
+    print(f"Available dates: {list(menu.keys())}")
 
-    if decoded_date in menu:
-        return jsonify({decoded_date: menu[decoded_date]})
+    # Directly check for the exact match
+    if date in menu:
+        return jsonify({date: menu[date]})
     else:
-        print(f"Available keys in menu: {list(menu.keys())}")  # Debugging log
         return jsonify({"error": "Menu for this date not found"}), 404
     
 # Route to return the schedule image
