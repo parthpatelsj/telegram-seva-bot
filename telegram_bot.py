@@ -4,6 +4,7 @@ import requests
 from io import BytesIO
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputFile
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
+from datetime import datetime
 
 # Enable logging
 logging.basicConfig(
@@ -136,19 +137,27 @@ async def food_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.error(f"Error fetching food menu: {str(e)}")
         await query.edit_message_text("Error fetching the food menu. Please try again later.")
 
+# Callback Handler: Date-specific Food Menu
 async def food_menu_by_date(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     _, selected_date = query.data.split(":")
     await query.answer()
 
     try:
-        # Fetch menu for the selected date from the backend
-        response = requests.get(f"{BASE_URL}/menu/{selected_date}")
+        # Normalize the date format to match the backend (e.g., "Friday 1/17" or "01-16-25")
+        # Assuming the backend expects "MM-DD-YY"
+        try:
+            normalized_date = datetime.strptime(selected_date, "%m-%d-%y").strftime("%m-%d-%y")
+        except ValueError:
+            normalized_date = selected_date  # Use as-is if already in correct format
+
+        # Fetch menu for the normalized date from the backend
+        response = requests.get(f"{BASE_URL}/menu/{normalized_date}")
         if response.status_code != 200:
             await query.edit_message_text("Menu for the selected date not found.")
             return
 
-        menu = response.json().get(selected_date, {})
+        menu = response.json().get(normalized_date, {})
         message = f"*🍴 Food Menu for {selected_date}*\n\n"
 
         # Sort meals in breakfast, lunch, dinner order
@@ -164,6 +173,7 @@ async def food_menu_by_date(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     except Exception as e:
         logger.error(f"Error fetching menu for {selected_date}: {str(e)}")
         await query.edit_message_text("Error fetching the menu for the selected date. Please try again later.")
+
 # Callback Handler: Year In Review
 async def year_in_review(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
