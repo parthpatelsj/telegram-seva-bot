@@ -48,18 +48,10 @@ def get_full_menu():
 @app.route('/menu/<date>', methods=['GET'])
 def get_menu_by_date(date):
     menu = load_menu().get('menu', {})
-
-    # Normalize the date format to match the keys in the JSON
-    try:
-        # Try to parse the date in the format "Friday 1/17"
-        parsed_date = datetime.strptime(date, "%A %m/%d")  # Adjust format as per your callback data
-        normalized_date = parsed_date.strftime("%m-%d-%y")  # Match your JSON keys format (e.g., "01-17-25")
-    except ValueError:
-        # If parsing fails, assume date is already in the correct format
-        normalized_date = date
-
-    if normalized_date in menu:
-        return jsonify({normalized_date: menu[normalized_date]})
+    
+    # Directly check for the exact date format from the callback (e.g., "Friday 1/17")
+    if date in menu:
+        return jsonify({date: menu[date]})
     else:
         return jsonify({"error": "Menu for this date not found"}), 404
     
