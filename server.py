@@ -50,20 +50,18 @@ def get_full_menu():
 def get_menu_by_date(date):
     menu = load_menu().get('menu', {})
     
-    # Normalize keys to avoid case/whitespace mismatches
-    normalized_menu = {key.strip().lower(): value for key, value in menu.items()}
-    normalized_date = date.strip().lower()
-
+    # Decode the URL-encoded date
+    decoded_date = unquote(date).strip()
+    
     # Log for debugging
-    print(f"Received date: {normalized_date}")
-    print(f"Available dates: {list(normalized_menu.keys())}")
-
-    # Match the normalized date
-    if normalized_date in normalized_menu:
-        return jsonify({date: normalized_menu[normalized_date]})
+    print(f"Received date (decoded): {decoded_date}")
+    print(f"Available dates: {list(menu.keys())}")
+    
+    # Match the decoded date
+    if decoded_date in menu:
+        return jsonify({decoded_date: menu[decoded_date]})
     else:
         return jsonify({"error": "Menu for this date not found"}), 404
-
     
 # Route to return the schedule image
 @app.route('/schedule_image', methods=['GET'])
