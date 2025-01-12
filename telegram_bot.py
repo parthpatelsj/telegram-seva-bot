@@ -128,14 +128,20 @@ async def food_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
         menu = response.json()["menu"]
 
-        # Create a date picker with InlineKeyboardButtons
-        keyboard = [[InlineKeyboardButton(date, callback_data=f"food_menu_date:{date}")] for date in menu.keys()]
+        # Hardcode buttons with exact strings from JSON
+        keyboard = [
+            [InlineKeyboardButton("Friday 1/17", callback_data="food_menu_date:Friday 1/17")],
+            [InlineKeyboardButton("Saturday 1/18", callback_data="food_menu_date:Saturday 1/18")],
+            [InlineKeyboardButton("Sunday 1/19", callback_data="food_menu_date:Sunday 1/19")],
+        ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await query.edit_message_text("🍴 Select a date to view the food menu:", reply_markup=reply_markup)
     except Exception as e:
         logger.error(f"Error fetching food menu: {str(e)}")
         await query.edit_message_text("Error fetching the food menu. Please try again later.")
+
+
 
 # Callback Handler: Date-specific Food Menu
 async def food_menu_by_date(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -144,12 +150,13 @@ async def food_menu_by_date(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     await query.answer()
 
     try:
-        # Fetch menu for the selected date from the backend
+        # Use the hardcoded date as-is to query the backend
         response = requests.get(f"{BASE_URL}/menu/{selected_date}")
         if response.status_code != 200:
             await query.edit_message_text("Menu for the selected date not found.")
             return
 
+        # Fetch and display the menu
         menu = response.json().get(selected_date, {})
         message = f"*🍴 Food Menu for {selected_date}*\n\n"
 

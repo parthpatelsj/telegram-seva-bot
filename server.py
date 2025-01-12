@@ -48,12 +48,13 @@ def get_full_menu():
 @app.route('/menu/<date>', methods=['GET'])
 def get_menu_by_date(date):
     menu = load_menu().get('menu', {})
-    
-    # Directly check for the exact date format from the callback (e.g., "Friday 1/17")
+
+    # Directly check for the exact date string
     if date in menu:
         return jsonify({date: menu[date]})
     else:
         return jsonify({"error": "Menu for this date not found"}), 404
+
     
 # Route to return the schedule image
 @app.route('/schedule_image', methods=['GET'])
