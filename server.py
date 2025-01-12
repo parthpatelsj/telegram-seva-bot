@@ -46,21 +46,23 @@ def get_full_menu():
     menu = load_menu()
     return jsonify(menu)
 
-# Endpoint: Get meals for a specific date
 @app.route('/menu/<date>', methods=['GET'])
 def get_menu_by_date(date):
     menu = load_menu().get('menu', {})
 
     # Decode the URL-encoded date
     decoded_date = unquote(date).strip()
-    
-    # Log for debugging
-    print(f"Received date (decoded): {decoded_date}")
-    print(f"Available dates in menu: {list(menu.keys())}")
 
-    # Match the decoded date with the JSON keys
-    if decoded_date in menu:
-        return jsonify({decoded_date: menu[decoded_date]})
+    # Normalize menu keys for comparison (optional, in case of whitespace issues)
+    normalized_menu = {key.strip(): value for key, value in menu.items()}
+
+    # Debugging Logs
+    print(f"Received date (decoded): {decoded_date}")
+    print(f"Available dates in menu: {list(normalized_menu.keys())}")
+
+    # Match decoded date with JSON keys
+    if decoded_date in normalized_menu:
+        return jsonify({decoded_date: normalized_menu[decoded_date]})
     else:
         return jsonify({"error": "Menu for this date not found"}), 404
     
