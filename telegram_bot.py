@@ -136,7 +136,6 @@ async def food_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.error(f"Error fetching food menu: {str(e)}")
         await query.edit_message_text("Error fetching the food menu. Please try again later.")
 
-# Callback Handler: Date-specific Food Menu
 async def food_menu_by_date(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     _, selected_date = query.data.split(":")
@@ -152,17 +151,19 @@ async def food_menu_by_date(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         menu = response.json().get(selected_date, {})
         message = f"*🍴 Food Menu for {selected_date}*\n\n"
 
-        for meal, details in menu.items():
-            message += f"🍽 *{meal.capitalize()}* (Timing: {details.get('timing', 'N/A')})\n"
-            for item in details.get("items", []):
-                message += f"- {item['name']} ({item['type']})\n"
-            message += "\n"
+        # Sort meals in breakfast, lunch, dinner order
+        for meal in ["breakfast", "lunch", "dinner"]:
+            details = menu.get(meal)
+            if details:
+                message += f"🍽 *{meal.capitalize()}* (Timing: {details.get('timing', 'N/A')})\n"
+                for item in details.get("items", []):
+                    message += f"- {item['name']} ({item['type']})\n"
+                message += "\n"
 
-        await query.edit_message_text(message, parse_mode="Markdown")
+        await query.edit_message_text(message.strip(), parse_mode="Markdown")
     except Exception as e:
         logger.error(f"Error fetching menu for {selected_date}: {str(e)}")
         await query.edit_message_text("Error fetching the menu for the selected date. Please try again later.")
-
 # Callback Handler: Year In Review
 async def year_in_review(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
