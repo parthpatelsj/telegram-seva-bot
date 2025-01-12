@@ -227,7 +227,6 @@ async def search_by_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text("Error searching breakout by full name. Please try again later.")
 
 
-# Callback Handler: Breakout Schedule
 async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
@@ -235,15 +234,20 @@ async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     try:
         # Extract Telegram user's first name
         user_first_name = update.effective_user.first_name
+        if not user_first_name:
+            await query.edit_message_text("Could not fetch your name from Telegram. Please try again or provide your full name.")
+            return
 
         # Fetch breakout matches using the first name
         response = requests.post(f"{BASE_URL}/search_breakouts", json={"first_name": user_first_name})
 
         if response.status_code != 200:
-            await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
+            logger.error(f"Backend error: {response.status_code}, {response.text}")
+            await query.edit_message_text(f"Error fetching breakout schedule. Server returned: {response.status_code}. Please try again later.")
             return
 
         data = response.json()
+        logger.info(f"Breakout schedule response: {data}")
 
         # Check if the response requires user input (e.g., full name needed)
         if "prompt" in data:
@@ -257,7 +261,7 @@ async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             keyboard = [
                 [InlineKeyboardButton(f"{opt['First Name']} {opt['Last Name']} ({opt['Center']}, {opt['Primary Seva']})",
                                       callback_data=f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}")]
-                for opt in data["options"]
+                for opt in data["options"][:100]  # Limit to 100 buttons
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(data["message"], reply_markup=reply_markup)
