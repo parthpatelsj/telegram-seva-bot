@@ -46,25 +46,32 @@ def get_full_menu():
     menu = load_menu()
     return jsonify(menu)
 
-@app.route('/menu/<date>', methods=['GET'])
+@app.route('/menu/<path:date>', methods=['GET'])
 def get_menu_by_date(date):
+    # Load menu from the JSON file
     menu = load_menu().get('menu', {})
-
-    # Decode the URL-encoded date
+    
+    # Decode the URL-encoded date and normalize it
     decoded_date = unquote(date).strip()
-
-    # Normalize menu keys for comparison (optional, in case of whitespace issues)
-    normalized_menu = {key.strip(): value for key, value in menu.items()}
-
-    # Debugging Logs
+    
+    # Add debug logging
     print(f"Received date (decoded): {decoded_date}")
-    print(f"Available dates in menu: {list(normalized_menu.keys())}")
-
-    # Match decoded date with JSON keys
-    if decoded_date in normalized_menu:
-        return jsonify({decoded_date: normalized_menu[decoded_date]})
-    else:
-        return jsonify({"error": "Menu for this date not found"}), 404
+    print(f"Available dates in menu: {list(menu.keys())}")
+    
+    # Try exact match first
+    if decoded_date in menu:
+        return jsonify({decoded_date: menu[decoded_date]})
+        
+    # Try normalized comparison (case-insensitive, trimmed)
+    normalized_menu = {key.strip().lower(): (key, value) 
+                      for key, value in menu.items()}
+    normalized_date = decoded_date.lower()
+    
+    if normalized_date in normalized_menu:
+        original_key, value = normalized_menu[normalized_date]
+        return jsonify({original_key: value})
+    
+    return jsonify({"error": "Menu for this date not found"}), 404
     
 # Route to return the schedule image
 @app.route('/schedule_image', methods=['GET'])
