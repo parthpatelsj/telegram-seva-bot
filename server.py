@@ -46,20 +46,24 @@ def get_full_menu():
     menu = load_menu()
     return jsonify(menu)
 
-# Endpoint: Get meals for a specific date
 @app.route('/menu/<date>', methods=['GET'])
 def get_menu_by_date(date):
     menu = load_menu().get('menu', {})
+    
+    # Normalize keys to avoid case/whitespace mismatches
+    normalized_menu = {key.strip().lower(): value for key, value in menu.items()}
+    normalized_date = date.strip().lower()
 
-    # Log the received date and available keys for debugging
-    print(f"Received date: {date}")
-    print(f"Available dates: {list(menu.keys())}")
+    # Log for debugging
+    print(f"Received date: {normalized_date}")
+    print(f"Available dates: {list(normalized_menu.keys())}")
 
-    # Directly check for the exact match
-    if date in menu:
-        return jsonify({date: menu[date]})
+    # Match the normalized date
+    if normalized_date in normalized_menu:
+        return jsonify({date: normalized_menu[normalized_date]})
     else:
         return jsonify({"error": "Menu for this date not found"}), 404
+
     
 # Route to return the schedule image
 @app.route('/schedule_image', methods=['GET'])
