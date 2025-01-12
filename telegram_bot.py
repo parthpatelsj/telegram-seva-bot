@@ -150,13 +150,13 @@ async def food_menu_by_date(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     await query.answer()
 
     try:
-        # Use the hardcoded date as-is to query the backend
+        # Send the selected_date directly to the backend
         response = requests.get(f"{BASE_URL}/menu/{selected_date}")
         if response.status_code != 200:
             await query.edit_message_text("Menu for the selected date not found.")
             return
 
-        # Fetch and display the menu
+        # Display the menu for the selected date
         menu = response.json().get(selected_date, {})
         message = f"*🍴 Food Menu for {selected_date}*\n\n"
 

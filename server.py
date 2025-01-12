@@ -49,10 +49,15 @@ def get_full_menu():
 def get_menu_by_date(date):
     menu = load_menu().get('menu', {})
 
-    # Directly check for the exact date string
+    # Log the incoming date for debugging
+    print(f"Received date from frontend: {date}")
+
+    # Check for exact match
     if date in menu:
         return jsonify({date: menu[date]})
     else:
+        # Log available dates in the JSON for debugging
+        print(f"Available dates in menu: {list(menu.keys())}")
         return jsonify({"error": "Menu for this date not found"}), 404
 
     
