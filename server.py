@@ -220,19 +220,43 @@ def confirm_breakout():
         return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
 
     person = confirmed_person.iloc[0]
-    breakout_details = {
+
+    # Dynamically build breakout details based on available columns
+    breakout_details = {}
+    for i in range(1, 4):
+        breakout_time_col = f'Breakout #{i}'
+        breakout_room_col = f'Breakout #{i} Room Number'
+        breakout_details[f'Breakout #{i}'] = {
+            "Session": person.get(breakout_time_col, 'N/A'),
+            "Room": person.get(breakout_room_col, 'N/A') if breakout_room_col in person else None
+        }
+
+    # Add Center Planning details if available
+    center_planning = {
+        "Session": person.get('Center Planning', 'N/A'),
+        "Room": person.get('Center Planning Room Number', 'N/A')
+    }
+
+    # Add Ghoshti Group details if available
+    ghoshti_group = {
+        "Group": person.get('Ghoshti Group', 'N/A'),
+        "Room": person.get('Ghoshti Group Room Number', 'N/A')
+    }
+
+    # Build final response
+    response_details = {
         "First Name": person['First Name'],
         "Last Name": person['Last Name'],
         "Center": person['Center'],
         "Primary Seva": person['Primary Seva'],
-        "Breakout #1": person.get('Breakout #1', 'N/A'),
-        "Breakout #2": person.get('Breakout #2', 'N/A'),
-        "Breakout #3": person.get('Breakout #3', 'N/A'),
-        "Goshthi": person.get('Goshthi', 'N/A')
+        "Breakout Sessions": breakout_details,
+        "Center Planning": center_planning,
+        "Ghoshti Group": ghoshti_group
     }
+
     return jsonify({
         "message": "Breakout details confirmed!",
-        "details": breakout_details
+        "details": response_details
     })
 
 
