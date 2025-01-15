@@ -3,10 +3,11 @@
     "Friday 1/17": {
       "dinner": {
         "items": [
-          { "name": "Pizza", "type": "Main Item" },
-          { "name": "Greek Salad", "type": "Side Item" },
+          { "name": "Sauteed Veggies", "type": "Main Item" },
           { "name": "Penne Arrabiata", "type": "Main Item" },
-          { "name": "Lemonade", "type": "Drink" }
+          { "name": "Fettucine Alfredo", "type": "Main Item" },
+          { "name": "Santa Fe Salad", "type": "Side Item" },
+          { "name": "Sparkling Punch", "type": "Drink" }
         ],
         "timing": "7:30 PM"
       }
@@ -14,28 +15,27 @@
     "Saturday 1/18": {
       "breakfast": {
         "items": [
-          { "name": "Dhokla", "type": "Fresh/Hot Item" },
-          { "name": "Methi Thepla", "type": "Dry Snack" },
-          { "name": "Croissants", "type": "Baked Goods" },
-          { "name": "Milk", "type": "Drink" }
+          { "name": "Thiki Puri", "type": "Fresh/Hot Item" },
+          { "name": "Masala Papdi", "type": "Dry Snack" },
+          { "name": "Jalapeno Cheddar Biscuits", "type": "Baked Goods" },
         ],
         "timing": "7:45 AM"
       },
       "lunch": {
         "items": [
-          { "name": "Chole", "type": "Main Item" },
-          { "name": "Bhature", "type": "Main Item" },
-          { "name": "Raita", "type": "Side Item" },
-          { "name": "Lassi", "type": "Drink" }
+          { "name": "Rotli", "type": "Main Item" },
+          { "name": "Ras", "type": "Main Item" },
+          { "name": "Cut Bhinda Potato Dry", "type": "Main Item" },
+          { "name": "Kachori or Cutlets", "type": "Side Item" }
         ],
         "timing": "12:00 PM"
       },
       "dinner": {
         "items": [
-          { "name": "Tacos (Soft & Hard Shell)", "type": "Main Item" },
-          { "name": "Mexican Rice", "type": "Main Item" },
-          { "name": "Guacamole", "type": "Side Item" },
-          { "name": "Lemonade", "type": "Drink" }
+          { "name": "Chipotle Bowls", "type": "Main Item" },
+          { "name": "Salsa Bar", "type": "Main Item" },
+          { "name": "Live Quesadillas", "type": "Main Item" },
+          { "name": "Spicy Queso", "type": "Main Item" }
         ],
         "timing": "7:30 PM"
       }
@@ -43,17 +43,17 @@
     "Sunday 1/19": {
       "breakfast": {
         "items": [
-          { "name": "Bagels & Cream Cheese", "type": "Baked Goods" },
-          { "name": "Cheerios", "type": "Cereal" },
-          { "name": "Milk", "type": "Drink" }
+          { "name": "Sev Khamani", "type": "Fresh/Hot Item" },
+          { "name": "Pancakes + Syrup", "type": "Fresh/Hot Item" },
+          { "name": "Cinnamon Crumb Cake", "type": "Baked Good" }
         ],
         "timing": "8:15 AM"
       },
       "lunch": {
         "items": [
-          { "name": "Paneer Tikka Masala", "type": "Main Item" },
-          { "name": "Naan", "type": "Side Item" },
-          { "name": "Mango Lassi", "type": "Drink" }
+          { "name": "Pav Bhaji", "type": "Main Item" },
+          { "name": "Chinese Spring Rolls", "type": "Side Item" },
+          { "name": "Mango Mint Lemonade", "type": "Drink" }
         ],
         "timing": "12:15 PM"
       }
