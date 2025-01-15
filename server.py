@@ -209,6 +209,7 @@ def confirm_breakout():
     if not all([first_name, last_name, center, seva]):
         return jsonify({"message": "Please provide complete details to confirm your identity."}), 400
 
+    # Filter the dataset for the person
     confirmed_person = combined_breakouts[
         (combined_breakouts['First Name'] == first_name) &
         (combined_breakouts['Last Name'] == last_name) &
@@ -221,29 +222,30 @@ def confirm_breakout():
 
     person = confirmed_person.iloc[0]
 
-    # Dynamically build breakout details based on available columns
+    # Dynamically fetch breakout details based on actual column names
     breakout_details = {}
     for i in range(1, 4):
-        breakout_time_col = f'Breakout #{i}'
+        breakout_time_col = f'Breakout #{i} (10:30 - 12:00)' if f'Breakout #{i} (10:30 - 12:00)' in combined_breakouts.columns else f'Breakout #{i}'
         breakout_room_col = f'Breakout #{i} Room Number'
+
         breakout_details[f'Breakout #{i}'] = {
-            "Session": person.get(breakout_time_col, 'N/A'),
-            "Room": person.get(breakout_room_col, 'N/A') if breakout_room_col in person else None
+            "Session": person[breakout_time_col] if breakout_time_col in person.index else 'N/A',
+            "Room": person[breakout_room_col] if breakout_room_col in person.index else 'N/A'
         }
 
-    # Add Center Planning details if available
+    # Center Planning details
     center_planning = {
-        "Session": person.get('Center Planning', 'N/A'),
-        "Room": person.get('Center Planning Room Number', 'N/A')
+        "Session": person['Center Planning (4:30 - 6:00)'] if 'Center Planning (4:30 - 6:00)' in person.index else 'N/A',
+        "Room": person['Center Planning Room Number'] if 'Center Planning Room Number' in person.index else 'N/A'
     }
 
-    # Add Ghoshti Group details if available
+    # Ghoshti Group details
     ghoshti_group = {
-        "Group": person.get('Ghoshti Group', 'N/A'),
-        "Room": person.get('Ghoshti Group Room Number', 'N/A')
+        "Group": person['Ghoshti Group (3:15 - 4:00)'] if 'Ghoshti Group (3:15 - 4:00)' in person.index else 'N/A',
+        "Room": person['Ghoshti Group Room Number'] if 'Ghoshti Group Room Number' in person.index else 'N/A'
     }
 
-    # Build final response
+    # Build the response
     response_details = {
         "First Name": person['First Name'],
         "Last Name": person['Last Name'],
@@ -258,6 +260,7 @@ def confirm_breakout():
         "message": "Breakout details confirmed!",
         "details": response_details
     })
+
 
 
 @app.route('/search_by_full_name', methods=['POST'])
