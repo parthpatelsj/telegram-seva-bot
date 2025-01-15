@@ -197,6 +197,7 @@ def search_breakouts():
         "options": options
     })
 
+
 @app.route('/confirm_breakout', methods=['POST'])
 def confirm_breakout():
     user_data = request.json
@@ -219,12 +220,13 @@ def confirm_breakout():
     if confirmed_person.empty:
         return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
 
-    person = confirmed_person.iloc[0]
+    # Convert the matched row to a dictionary for easier data access
+    person = confirmed_person.iloc[0].to_dict()
 
     # Dynamically fetch breakout details based on actual column names
     breakout_details = {}
     for i in range(1, 4):
-        breakout_time_col = f'Breakout #{i} (10:30 - 12:00)' if f'Breakout #{i} (10:30 - 12:00)' in combined_breakouts.columns else f'Breakout #{i}'
+        breakout_time_col = f'Breakout #{i} (10:30 - 12:00)'
         breakout_room_col = f'Breakout #{i} Room Number'
 
         breakout_details[f'Breakout #{i}'] = {
@@ -259,8 +261,6 @@ def confirm_breakout():
         "message": "Breakout details confirmed!",
         "details": response_details
     })
-
-
 
 
 @app.route('/search_by_full_name', methods=['POST'])
