@@ -17,7 +17,7 @@
         "items": [
           { "name": "Thiki Puri", "type": "Fresh/Hot Item" },
           { "name": "Masala Papdi", "type": "Dry Snack" },
-          { "name": "Jalapeno Cheddar Biscuits", "type": "Baked Goods" },
+          { "name": "Jalapeno Cheddar Biscuits", "type": "Baked Goods" }
         ],
         "timing": "7:45 AM"
       },
