@@ -30,7 +30,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         [InlineKeyboardButton("📅 Event Schedule", callback_data="event_schedule")],
         [InlineKeyboardButton("📘 Breakout Schedule", callback_data="breakout_schedule")],
         [InlineKeyboardButton("🍴 Food Menu", callback_data="food_menu")],
-        [InlineKeyboardButton("Your Year In Review", web_app={"url": "https://telegram-seva.netlify.app"})]
+        [InlineKeyboardButton("📊 BKY Year In Review", callback_data="year_in_review")]
 
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -180,10 +180,26 @@ async def year_in_review(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     query = update.callback_query
     await query.answer()  # Acknowledge the button click
 
-    await query.edit_message_text(
-        "📊 Opening your Year In Review...\n[Click here to view it](https://telegram-seva.netlify.app)",
-        parse_mode="Markdown"
-    )
+    try:
+        # Fetch the PDF from the server
+        response = requests.get(f"{BASE_URL}/report", stream=True)
+        if response.status_code != 200:
+            await query.edit_message_text("Failed to retrieve the PDF. Please try again later.")
+            return
+
+        # Send the PDF to the user
+        pdf_data = BytesIO(response.content)
+        pdf_data.seek(0)
+
+        await context.bot.send_document(
+            chat_id=query.message.chat_id,
+            document=InputFile(pdf_data, filename="BKY_Annual_Report_2024.pdf"),
+            caption="📊 *BKY Annual Report 2024*",
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        logger.error(f"Error retrieving PDF: {str(e)}")
+        await query.edit_message_text("Error retrieving the PDF. Please try again later.")
 
 # Message Handler: Process Full Name Input
 async def search_by_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

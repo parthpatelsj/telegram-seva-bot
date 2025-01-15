@@ -32,6 +32,14 @@ def home():
     return 'Welcome to the Seva Bot API!'
 
 
+@app.route('/report', methods=['GET'])
+def get_pdf():
+    try:
+        return send_file('BKY Annual Report 2024.pdf', as_attachment=True)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # Utility function to load the menu
 def load_menu():
     try:
