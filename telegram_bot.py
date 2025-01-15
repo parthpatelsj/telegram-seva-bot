@@ -25,7 +25,7 @@ STATIC_RESPONSES = {
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a welcome message with interactive buttons."""
     keyboard = [
-        [InlineKeyboardButton("📶 Wi-Fi Information", callback_data="wifi")],
+        # [InlineKeyboardButton("📶 Wi-Fi Information", callback_data="wifi")],
         # [InlineKeyboardButton("📍 Common Session Seating", callback_data="common_session_seating")],
         [InlineKeyboardButton("📅 Event Schedule", callback_data="event_schedule")],
         [InlineKeyboardButton("📘 Breakout Schedule", callback_data="breakout_schedule")],
@@ -46,7 +46,7 @@ async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_T
     query = update.callback_query
     await query.answer()
     response = {
-        "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
+        # "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
         # "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!"
     }.get(query.data, "Sorry, I couldn't find the information.")
     await query.edit_message_text(text=response, parse_mode="Markdown")
@@ -361,7 +361,7 @@ def main() -> None:
 
     # Register handlers
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(wifi|today_food_menu)$"))
+    application.add_handler(CallbackQueryHandler(handle_static_response, pattern="^(today_food_menu)$"))
     application.add_handler(CallbackQueryHandler(event_schedule, pattern="^event_schedule$"))
     application.add_handler(CallbackQueryHandler(handle_mandal_selection, pattern="^mandal:"))
     application.add_handler(CallbackQueryHandler(handle_track_selection, pattern="^track:"))
