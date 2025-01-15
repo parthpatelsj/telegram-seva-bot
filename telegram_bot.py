@@ -16,7 +16,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 BASE_URL = "https://telegram-seva-bot-16ec0e933bf1.herokuapp.com"
 
 STATIC_RESPONSES = {
-    "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
+    # "wifi": "📶 *Wi-Fi Information*\nSSID: `mandir`\nPassword: `(open)` no password",
     # "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!",
     "today_food_menu": "🍴 *Today's Food Menu*\n- 🥞 *Breakfast*: Idli & Sambar\n- 🥗 *Lunch*: Paneer Tikka\n- 🍛 *Dinner*: Veg Biryani & Raita"
 }
