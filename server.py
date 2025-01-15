@@ -198,6 +198,7 @@ def search_breakouts():
     })
 
 
+
 @app.route('/confirm_breakout', methods=['POST'])
 def confirm_breakout():
     user_data = request.json
@@ -220,8 +221,8 @@ def confirm_breakout():
     if confirmed_person.empty:
         return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
 
-    # Convert the matched row to a dictionary for easier data access
-    person = confirmed_person.iloc[0].to_dict()
+    # Extract data correctly from the row
+    person = confirmed_person.iloc[0]
 
     # Dynamically fetch breakout details based on actual column names
     breakout_details = {}
@@ -230,20 +231,20 @@ def confirm_breakout():
         breakout_room_col = f'Breakout #{i} Room Number'
 
         breakout_details[f'Breakout #{i}'] = {
-            "Session": person.get(breakout_time_col, 'N/A'),
-            "Room": person.get(breakout_room_col, 'N/A')
+            "Session": person.get(breakout_time_col, 'N/A') if breakout_time_col in combined_breakouts.columns else 'N/A',
+            "Room": person.get(breakout_room_col, 'N/A') if breakout_room_col in combined_breakouts.columns else 'N/A'
         }
 
     # Dynamically fetch Center Planning details
     center_planning = {
-        "Session": person.get('Center Planning (4:30 - 6:00)', 'N/A'),
-        "Room": person.get('Center Planning Room Number', 'N/A')
+        "Session": person.get('Center Planning (4:30 - 6:00)', 'N/A') if 'Center Planning (4:30 - 6:00)' in combined_breakouts.columns else 'N/A',
+        "Room": person.get('Center Planning Room Number', 'N/A') if 'Center Planning Room Number' in combined_breakouts.columns else 'N/A'
     }
 
     # Dynamically fetch Ghoshti Group details
     ghoshti_group = {
-        "Group": person.get('Ghoshti Group (3:15 - 4:00)', 'N/A'),
-        "Room": person.get('Ghoshti Group Room Number', 'N/A')
+        "Group": person.get('Ghoshti Group (3:15 - 4:00)', 'N/A') if 'Ghoshti Group (3:15 - 4:00)' in combined_breakouts.columns else 'N/A',
+        "Room": person.get('Ghoshti Group Room Number', 'N/A') if 'Ghoshti Group Room Number' in combined_breakouts.columns else 'N/A'
     }
 
     # Build the response
@@ -261,6 +262,7 @@ def confirm_breakout():
         "message": "Breakout details confirmed!",
         "details": response_details
     })
+
 
 
 @app.route('/search_by_full_name', methods=['POST'])
