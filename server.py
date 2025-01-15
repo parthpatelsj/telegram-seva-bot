@@ -197,7 +197,6 @@ def search_breakouts():
         "options": options
     })
 
-
 @app.route('/confirm_breakout', methods=['POST'])
 def confirm_breakout():
     user_data = request.json
@@ -229,20 +228,20 @@ def confirm_breakout():
         breakout_room_col = f'Breakout #{i} Room Number'
 
         breakout_details[f'Breakout #{i}'] = {
-            "Session": person[breakout_time_col] if breakout_time_col in person.index else 'N/A',
-            "Room": person[breakout_room_col] if breakout_room_col in person.index else 'N/A'
+            "Session": person.get(breakout_time_col, 'N/A'),
+            "Room": person.get(breakout_room_col, 'N/A')
         }
 
-    # Center Planning details
+    # Dynamically fetch Center Planning details
     center_planning = {
-        "Session": person['Center Planning (4:30 - 6:00)'] if 'Center Planning (4:30 - 6:00)' in person.index else 'N/A',
-        "Room": person['Center Planning Room Number'] if 'Center Planning Room Number' in person.index else 'N/A'
+        "Session": person.get('Center Planning (4:30 - 6:00)', 'N/A'),
+        "Room": person.get('Center Planning Room Number', 'N/A')
     }
 
-    # Ghoshti Group details
+    # Dynamically fetch Ghoshti Group details
     ghoshti_group = {
-        "Group": person['Ghoshti Group (3:15 - 4:00)'] if 'Ghoshti Group (3:15 - 4:00)' in person.index else 'N/A',
-        "Room": person['Ghoshti Group Room Number'] if 'Ghoshti Group Room Number' in person.index else 'N/A'
+        "Group": person.get('Ghoshti Group (3:15 - 4:00)', 'N/A'),
+        "Room": person.get('Ghoshti Group Room Number', 'N/A')
     }
 
     # Build the response
@@ -260,6 +259,7 @@ def confirm_breakout():
         "message": "Breakout details confirmed!",
         "details": response_details
     })
+
 
 
 
