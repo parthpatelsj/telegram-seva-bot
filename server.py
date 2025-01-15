@@ -221,30 +221,45 @@ def confirm_breakout():
     if confirmed_person.empty:
         return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
 
-    # Extract data correctly from the row
+    # Extract data from the row
     person = confirmed_person.iloc[0]
 
-    # Dynamically fetch breakout details based on actual column names
+    # Format breakout session details with room numbers
     breakout_details = {}
-    for i in range(1, 4):
-        breakout_time_col = f'Breakout #{i} (10:30 - 12:00)'
-        breakout_room_col = f'Breakout #{i} Room Number'
-
-        breakout_details[f'Breakout #{i}'] = {
-            "Session": person.get(breakout_time_col, 'N/A') if breakout_time_col in combined_breakouts.columns else 'N/A',
-            "Room": person.get(breakout_room_col, 'N/A') if breakout_room_col in combined_breakouts.columns else 'N/A'
-        }
-
-    # Dynamically fetch Center Planning details
-    center_planning = {
-        "Session": person.get('Center Planning (4:30 - 6:00)', 'N/A') if 'Center Planning (4:30 - 6:00)' in combined_breakouts.columns else 'N/A',
-        "Room": person.get('Center Planning Room Number', 'N/A') if 'Center Planning Room Number' in combined_breakouts.columns else 'N/A'
+    
+    # Breakout #1
+    breakout1_session = person.get('Breakout #1 (10:30 - 12:00)', 'N/A')
+    breakout1_room = person.get('Breakout #1 Room Number', 'N/A')
+    breakout_details['Breakout #1'] = {
+        "Session": f"{breakout1_session} (Room {breakout1_room})" if breakout1_session != 'N/A' else 'N/A'
     }
 
-    # Dynamically fetch Ghoshti Group details
-    ghoshti_group = {
-        "Group": person.get('Ghoshti Group (3:15 - 4:00)', 'N/A') if 'Ghoshti Group (3:15 - 4:00)' in combined_breakouts.columns else 'N/A',
-        "Room": person.get('Ghoshti Group Room Number', 'N/A') if 'Ghoshti Group Room Number' in combined_breakouts.columns else 'N/A'
+    # Breakout #2
+    breakout2_session = person.get('Breakout #2 (6:00 - 7:30)', 'N/A')
+    breakout2_room = person.get('Breakout #2 Room Number', 'N/A')
+    breakout_details['Breakout #2'] = {
+        "Session": f"{breakout2_session} (Room {breakout2_room})" if breakout2_session != 'N/A' else 'N/A'
+    }
+
+    # Breakout #3
+    breakout3_session = person.get('Breakout #3 (8:45 - 9:45)', 'N/A')
+    breakout3_room = person.get('Breakout #3 Room Number', 'N/A')
+    breakout_details['Breakout #3'] = {
+        "Session": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
+    }
+
+    # Center Planning
+    center_planning_session = person.get('Center Planning (4:30 - 6:00)', 'N/A')
+    center_planning_room = person.get('Center Planning Room Number', 'N/A')
+    center_planning = {
+        "Session": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
+    }
+
+    # Ghoshti Group
+    ghoshti_session = person.get('Ghosthi Group (3:15 - 4:00)', 'N/A')
+    ghoshti_room = person.get('Ghosthi Group Room Number', 'N/A')
+    ghoshti = {
+        "Session": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
     }
 
     # Build the response
@@ -255,7 +270,7 @@ def confirm_breakout():
         "Primary Seva": person['Primary Seva'],
         "Breakout Sessions": breakout_details,
         "Center Planning": center_planning,
-        "Ghoshti Group": ghoshti_group
+        "Ghoshti": ghoshti
     }
 
     return jsonify({
