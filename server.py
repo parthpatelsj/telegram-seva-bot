@@ -197,7 +197,6 @@ def search_breakouts():
         "options": options
     })
 
-
 @app.route('/confirm_breakout', methods=['POST'])
 def confirm_breakout():
     try:
