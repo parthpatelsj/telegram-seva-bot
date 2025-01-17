@@ -95,7 +95,40 @@ def get_schedule_image():
 def load_breakout_schedule():
     with open(BREAKOUTS_FILE, 'r') as file:
         return json.load(file)
+
+# Determine the source (eBreakouts or iBreakouts) based on user details
+def get_source(first_name, last_name):
+    # Load eBreakouts
+    ebreakouts = pd.read_csv('ebreakouts.csv')
+    ibreakouts = pd.read_csv('ibreakouts.csv')
+
+    # Check for a match in eBreakouts
+    if not ebreakouts[(ebreakouts['First Name'] == first_name) & (ebreakouts['Last Name'] == last_name)].empty:
+        return "ebreakouts"
     
+    # Check for a match in iBreakouts
+    if not ibreakouts[(ibreakouts['First Name'] == first_name) & (ibreakouts['Last Name'] == last_name)].empty:
+        return "ibreakouts"
+
+    # Default to eBreakouts if not found
+    return "ebreakouts"
+
+# Endpoint: Get breakout source for a user
+@app.route('/get_source', methods=['POST'])
+def get_user_source():
+    try:
+        data = request.json
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+
+        if not first_name or not last_name:
+            return jsonify({"error": "First name and last name are required"}), 400
+
+        source = get_source(first_name, last_name)
+        return jsonify({"source": source})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 # Endpoint: Get all Mandals
 @app.route('/mandals', methods=['GET'])
 def get_mandals():
