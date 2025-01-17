@@ -223,59 +223,92 @@ def confirm_breakout():
 
     # Extract data from the row
     person = confirmed_person.iloc[0]
-
-    # Format breakout session details with room numbers
+    
+    # Detect CSV format by checking for column existence
+    is_balika_format = 'Goshthi' in person.index
+    
     breakout_details = {}
     
-    # Breakout #1 (uses original 'Room Number' column)
-    breakout1_session = person.get('Breakout #1 (10:30 - 12:00)', 'N/A')
-    breakout1_room = person.get('Room Number', 'N/A')
-    breakout_details['Breakout #1'] = {
-        "Time": "10:30 - 12:00",
-        "Session": breakout1_session,
-        "Room": breakout1_room,
-        "Display": f"{breakout1_session} (Room {breakout1_room})" if breakout1_session != 'N/A' else 'N/A'
-    }
+    if is_balika_format:
+        # Handle Balika/Kishori/Yuvati format
+        breakout1_session = person.get('Breakout #1', 'N/A')
+        breakout2_session = person.get('Breakout #2', 'N/A')
+        goshthi_session = person.get('Goshthi', 'N/A')
+        
+        breakout_details['Breakout #1'] = {
+            "Time": "10:30 - 12:00",
+            "Session": breakout1_session,
+            "Room": "N/A",  # Room is embedded in sessions for this format
+            "Display": breakout1_session if breakout1_session != 'N/A' else 'N/A'
+        }
 
-    # Breakout #2 (uses 'Room Number.1')
-    breakout2_session = person.get('Breakout #2 (6:00 - 7:30)', 'N/A')
-    breakout2_room = person.get('Room Number.1', 'N/A')
-    breakout_details['Breakout #2'] = {
-        "Time": "6:00 - 7:30",
-        "Session": breakout2_session,
-        "Room": breakout2_room,
-        "Display": f"{breakout2_session} (Room {breakout2_room})" if breakout2_session != 'N/A' else 'N/A'
-    }
+        breakout_details['Breakout #2'] = {
+            "Time": "2:00 - 3:30",
+            "Session": breakout2_session,
+            "Room": "N/A",
+            "Display": breakout2_session if breakout2_session != 'N/A' else 'N/A'
+        }
+        
+        ghoshti = {
+            "Time": "3:45 - 4:45",
+            "Session": goshthi_session,
+            "Room": "N/A",
+            "Display": goshthi_session if goshthi_session != 'N/A' else 'N/A'
+        }
+        
+        center_planning = {
+            "Time": "N/A",
+            "Session": "N/A",
+            "Room": "N/A",
+            "Display": "N/A"
+        }
+        
+    else:
+        # Handle original format with separate room columns
+        breakout1_session = person.get('Breakout #1 (10:30 - 12:00)', 'N/A')
+        breakout1_room = person.get('Room Number', 'N/A')
+        breakout_details['Breakout #1'] = {
+            "Time": "10:30 - 12:00",
+            "Session": breakout1_session,
+            "Room": breakout1_room,
+            "Display": f"{breakout1_session} (Room {breakout1_room})" if breakout1_session != 'N/A' else 'N/A'
+        }
 
-    # Breakout #3 (uses 'Room Number.2')
-    breakout3_session = person.get('Breakout #3 (8:45 - 9:45)', 'N/A')
-    breakout3_room = person.get('Room Number.2', 'N/A')
-    breakout_details['Breakout #3'] = {
-        "Time": "8:45 - 9:45",
-        "Session": breakout3_session,
-        "Room": breakout3_room,
-        "Display": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
-    }
+        breakout2_session = person.get('Breakout #2 (6:00 - 7:30)', 'N/A')
+        breakout2_room = person.get('Room Number.1', 'N/A')
+        breakout_details['Breakout #2'] = {
+            "Time": "6:00 - 7:30",
+            "Session": breakout2_session,
+            "Room": breakout2_room,
+            "Display": f"{breakout2_session} (Room {breakout2_room})" if breakout2_session != 'N/A' else 'N/A'
+        }
 
-    # Center Planning (uses 'Room Number.3')
-    center_planning_session = person.get('Center Planning (4:30 - 6:00)', 'N/A')
-    center_planning_room = person.get('Room Number.3', 'N/A')
-    center_planning = {
-        "Time": "4:30 - 6:00",
-        "Session": center_planning_session,
-        "Room": center_planning_room,
-        "Display": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
-    }
+        breakout3_session = person.get('Breakout #3 (8:45 - 9:45)', 'N/A')
+        breakout3_room = person.get('Room Number.2', 'N/A')
+        breakout_details['Breakout #3'] = {
+            "Time": "8:45 - 9:45",
+            "Session": breakout3_session,
+            "Room": breakout3_room,
+            "Display": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
+        }
 
-    # Ghoshti Group (uses 'Room Number.4')
-    ghoshti_session = person.get('Ghosthi Group (3:15 - 4:00)', 'N/A')
-    ghoshti_room = person.get('Room Number.4', 'N/A')
-    ghoshti = {
-        "Time": "3:15 - 4:00",
-        "Session": ghoshti_session,
-        "Room": ghoshti_room,
-        "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
-    }
+        center_planning_session = person.get('Center Planning (4:30 - 6:00)', 'N/A')
+        center_planning_room = person.get('Room Number.3', 'N/A')
+        center_planning = {
+            "Time": "4:30 - 6:00",
+            "Session": center_planning_session,
+            "Room": center_planning_room,
+            "Display": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
+        }
+
+        ghoshti_session = person.get('Ghosthi Group (3:15 - 4:00)', 'N/A')
+        ghoshti_room = person.get('Room Number.4', 'N/A')
+        ghoshti = {
+            "Time": "3:15 - 4:00",
+            "Session": ghoshti_session,
+            "Room": ghoshti_room,
+            "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
+        }
 
     # Build the response
     response_details = {
