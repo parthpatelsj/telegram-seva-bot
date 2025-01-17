@@ -313,7 +313,7 @@ def confirm_breakout():
                 "Display": (f"{person['Ghoshti_Session']} ({format_room(person['Ghoshti_Room'])})"
                           if pd.notna(person['Ghoshti_Room'])
                           else person['Ghoshti_Session'])
-            }
+            },
             "Source": person['Type'].lower()  # This will be either 'ibky' or 'ebky'
         }
 
