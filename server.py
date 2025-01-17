@@ -284,7 +284,8 @@ def confirm_breakout():
         # Check if person is from ibreakouts.csv (looking for indicators like Wing or specific columns)
         is_ibreakout = False
         for col in person.index:
-            if col == 'Wing' and person['Wing'] in ['Balika', 'Kishori', 'Yuvati']:  # Check if 'Wing' exists and matches one of the valid values
+            
+            if col == 'Wing' and person['Wing'] in ['Balika', 'Kishori', 'Yuvati', 'iBKY']:  # Check if 'Wing' exists and matches one of the valid values
                 is_ibreakout = True
                 break
 
