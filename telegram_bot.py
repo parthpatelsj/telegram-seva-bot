@@ -362,12 +362,12 @@ async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 # Send iBreakouts map
                 response = requests.get(f"{BASE_URL}/ibreakouts_map")
                 if response.status_code == 200:
-                    image_data = BytesIO(response.content)
-                    image_data.seek(0)
-                    await context.bot.send_photo(
+                    pdf_data = BytesIO(response.content)
+                    pdf_data.seek(0)
+                    await context.bot.send_document(
                         chat_id=query.message.chat_id,
-                        photo=InputFile(image_data, filename="iBreakoutsMap.jpg"),
-                        caption="📍 Room Map for your sessions, ibreak"
+                        document=InputFile(pdf_data, filename="iBreakoutsInfo.pdf"),
+                        caption="📄 Room Map for your sessions, ibreak"
                     )
             else:
                 # Send eBreakouts map
