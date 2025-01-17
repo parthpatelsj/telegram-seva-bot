@@ -359,7 +359,7 @@ def get_ebreakouts_map():
 @app.route('/ibreakouts_map', methods=['GET'])
 def get_ibreakouts_map():
     try:
-        return send_file('iBreakoutsMap.jpg', mimetype='image/jpeg')
+        return send_file('iBreakoutsInfo.pdf', mimetype='application/pdf')
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
