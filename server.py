@@ -277,6 +277,8 @@ def confirm_breakout():
 
         if not is_ibreakout:
             # Handle ebreakouts format
+            columns = list(person.index)
+            
             # Breakout #1
             session1 = format_session(person['Breakout #1 (10:30 - 12:00)'])
             room1 = format_room(person['Room Number'])
@@ -285,77 +287,75 @@ def confirm_breakout():
                     "Time": "10:30 - 12:00",
                     "Session": session1,
                     "Room": room1,
-                    "Display": f"{session1} (Room {room1})" if session1 != 'N/A' else 'N/A'
+                    "Display": f"{session1} (Room {room1})"
                 }
 
             # Breakout #2
             session2 = format_session(person['Breakout #2 (6:00 - 7:30)'])
-            room2 = format_room(person['Room Number_1'])  # Note the underscore instead of period
+            room2 = format_room(person['Room Number_1'])
             if session2 != "N/A":
                 breakout_details['Breakout #2'] = {
                     "Time": "6:00 - 7:30",
                     "Session": session2,
                     "Room": room2,
-                    "Display": f"{session2} (Room {room2})" if session2 != 'N/A' else 'N/A'
+                    "Display": f"{session2} (Room {room2})"
                 }
 
             # Breakout #3
             session3 = format_session(person['Breakout #3 (8:45 - 9:45)'])
-            room3 = format_room(person['Room Number_2'])  # Note the underscore instead of period
-            if session3 != "N/A" and session3 != "":
+            room3 = format_room(person['Room Number_2'])
+            if session3 and session3 != "N/A":
                 breakout_details['Breakout #3'] = {
                     "Time": "8:45 - 9:45",
                     "Session": session3,
                     "Room": room3,
-                    "Display": f"{session3} (Room {room3})" if session3 != 'N/A' else 'N/A'
+                    "Display": f"{session3} (Room {room3})"
                 }
 
             # Handle Center Planning
             center_planning_session = format_session(person['Center Planning (4:30 - 6:00)'])
-            center_planning_room = format_room(person['Room Number_3'])  # Note the underscore instead of period
+            center_planning_room = format_room(person['Room Number_3'])
             center_planning = {
                 "Time": "4:30 - 6:00",
                 "Session": center_planning_session,
                 "Room": center_planning_room,
-                "Display": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
+                "Display": f"{center_planning_session} (Room {center_planning_room})"
             }
 
             # Handle Ghoshti
             ghoshti_session = format_session(person['Ghosthi Group (3:15 - 4:00)'])
-            ghoshti_room = format_room(person['Room Number_4'])  # Note the underscore instead of period
+            ghoshti_room = format_room(person['Room Number_4'])
             ghoshti = {
                 "Time": "3:15 - 4:00",
                 "Session": ghoshti_session,
                 "Room": ghoshti_room,
-                "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
+                "Display": f"{ghoshti_session} (Room {ghoshti_room})"
             }
 
         else:
-            # Keep the existing ibreakouts handling as it's working correctly
-            # Breakout #1
-            breakout1_session = format_session(person.get('Breakout #1 10:30am-12pm', 'N/A'))
-            breakout1_room = format_session(person.get('Breakout Room 1', 'N/A'))
+            # Handle ibreakouts format
+            breakout1_session = format_session(person['Breakout #1 10:30am-12pm'])
+            breakout1_room = format_session(person['Breakout Room 1'])
             if breakout1_session != "N/A":
                 breakout_details['Breakout #1'] = {
                     "Time": "10:30am-12pm",
                     "Session": breakout1_session,
                     "Room": breakout1_room,
-                    "Display": f"{breakout1_session} ({breakout1_room})" if breakout1_room != "N/A" else breakout1_session
+                    "Display": f"{breakout1_session} ({breakout1_room})"
                 }
 
-            # Breakout #2
-            breakout2_session = format_session(person.get('Breakout #2 6pm-7:30pm', 'N/A'))
-            breakout2_room = format_session(person.get('Breakout Room 2', 'N/A'))
+            breakout2_session = format_session(person['Breakout #2 6pm-7:30pm'])
+            breakout2_room = format_session(person['Breakout Room 2'])
             if breakout2_session != "N/A":
                 breakout_details['Breakout #2'] = {
                     "Time": "6pm-7:30pm",
                     "Session": breakout2_session,
                     "Room": breakout2_room,
-                    "Display": f"{breakout2_session} ({breakout2_room})" if breakout2_room != "N/A" else breakout2_session
+                    "Display": f"{breakout2_session} ({breakout2_room})"
                 }
 
             # Handle Center Planning
-            center_planning_session = format_session(person.get('Center Analysis 4:30-6pm', 'N/A'))
+            center_planning_session = format_session(person['Center Analysis 4:30-6pm'])
             center_planning = {
                 "Time": "4:30-6pm",
                 "Session": center_planning_session,
@@ -364,7 +364,7 @@ def confirm_breakout():
             }
 
             # Handle Ghoshti
-            ghoshti_session = format_session(person.get('Goshti 3:15-4pm', 'N/A'))
+            ghoshti_session = format_session(person['Goshti 3:15-4pm'])
             ghoshti = {
                 "Time": "3:15-4pm",
                 "Session": ghoshti_session,
@@ -392,7 +392,6 @@ def confirm_breakout():
     except Exception as e:
         print(f"Error in confirm_breakout: {str(e)}")
         return jsonify({"message": "Error confirming breakout details.", "error": str(e)}), 500
-
 
 @app.route('/search_by_full_name', methods=['POST'])
 def search_by_full_name():
