@@ -222,6 +222,9 @@ def confirm_breakout():
 
         # Extract data from the row
         person = matches.iloc[0]
+        # Replace the current is_ibreakout detection with:
+        columns = set(person.index)
+        is_ibreakout = 'Room Number' not in columns
         
         # Helper function to format room numbers
         def format_room(room):
