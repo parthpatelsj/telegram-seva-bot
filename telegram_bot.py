@@ -367,7 +367,7 @@ async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                     await context.bot.send_photo(
                         chat_id=query.message.chat_id,
                         photo=InputFile(image_data, filename="iBreakoutsMap.jpg"),
-                        caption="📍 Room Map for your sessions"
+                        caption="📍 Room Map for your sessions, ibreak"
                     )
             else:
                 # Send eBreakouts map
@@ -378,7 +378,7 @@ async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                     await context.bot.send_photo(
                         chat_id=query.message.chat_id,
                         photo=InputFile(image_data, filename="eBreakoutsMap.jpg"),
-                        caption="📍 Room Map for your sessions"
+                        caption="📍 Room Map for your sessions, ebreak"
                     )
         except Exception as img_e:
             logger.error(f"Error sending map: {str(img_e)}")
