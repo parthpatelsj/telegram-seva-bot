@@ -339,47 +339,43 @@ def confirm_breakout():
                 "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
             }
         else:
-            # Handle new format
+            # Handle new format (ibreakouts.csv)
             breakout1_session = format_session(person.get('Breakout #1', 'N/A'))
+            breakout1_room = format_session(person.get('Breakout Room 1', 'N/A'))
             if breakout1_session != "N/A":
                 breakout_details['Breakout #1'] = {
-                    "Time": "10:30 - 12:00",
+                    "Time": "10:30am-12pm",
                     "Session": breakout1_session,
-                    "Room": "N/A",
-                    "Display": breakout1_session
+                    "Room": breakout1_room,
+                    "Display": f"{breakout1_session} ({breakout1_room})"
                 }
 
             breakout2_session = format_session(person.get('Breakout #2', 'N/A'))
+            breakout2_room = format_session(person.get('Breakout Room 2', 'N/A'))
             if breakout2_session != "N/A":
                 breakout_details['Breakout #2'] = {
-                    "Time": "2:00 - 3:30",
+                    "Time": "6pm-7:30pm",
                     "Session": breakout2_session,
-                    "Room": "N/A",
-                    "Display": breakout2_session
+                    "Room": breakout2_room,
+                    "Display": f"{breakout2_session} ({breakout2_room})"
                 }
 
-            # Parse room from Goshthi field (e.g., "4 - Room 5" -> "Room 5")
-            goshthi = format_session(person.get('Goshthi', 'N/A'))
-            if ' - ' in str(goshthi):
-                room_info = str(goshthi).split(' - ')[1]
-                session_info = str(goshthi).split(' - ')[0]
+            # Handle Goshti (note the spelling change)
+            goshti = format_session(person.get('Goshti', 'N/A'))
+            if goshti != "N/A":
+                ghoshti = {
+                    "Time": "3:15-4pm",
+                    "Session": goshti,
+                    "Room": "N/A",
+                    "Display": goshti
+                }
             else:
-                room_info = 'N/A'
-                session_info = str(goshthi) if goshthi != 'N/A' else 'N/A'
-
-            ghoshti = {
-                "Time": "3:45 - 4:45",
-                "Session": session_info,
-                "Room": room_info,
-                "Display": goshthi if goshthi != 'N/A' else 'N/A'
-            }
-            
-            center_planning = {
-                "Time": "N/A",
-                "Session": "N/A",
-                "Room": "N/A",
-                "Display": "N/A"
-            }
+                ghoshti = {
+                    "Time": "3:15-4pm",
+                    "Session": "N/A",
+                    "Room": "N/A",
+                    "Display": "N/A"
+                }
 
         # Build the response
         response_details = {
