@@ -248,7 +248,9 @@ async def search_by_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE
             await update.message.reply_text(data["message"], reply_markup=reply_markup)
         else:
             await update.message.reply_text("No breakout sessions found for the provided name.")
-
+    except Exception as e:
+        logger.error(f"Error searching breakout by full name: {str(e)}")
+        await update.message.reply_text("Error searching breakout by full name. Please try again later.")
 
 
 async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
