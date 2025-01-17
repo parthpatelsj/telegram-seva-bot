@@ -271,14 +271,10 @@ def confirm_breakout():
             return str(session)
 
         breakout_details = {}
-        
-        # Determine format by checking for Wing column
         is_ibreakout = 'Wing' in person.index
 
         if not is_ibreakout:
             # Handle ebreakouts format
-            columns = list(person.index)
-            
             # Breakout #1
             session1 = format_session(person['Breakout #1 (10:30 - 12:00)'])
             room1 = format_room(person['Room Number'])
@@ -372,7 +368,6 @@ def confirm_breakout():
                 "Display": ghoshti_session
             }
 
-        # Build the response
         response_details = {
             "First Name": person['First Name'],
             "Last Name": person['Last Name'],
