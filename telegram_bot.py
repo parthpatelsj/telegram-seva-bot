@@ -282,7 +282,7 @@ async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(data["message"], reply_markup=reply_markup)
         else:
-            await query.edit_message_text("No breakout sessions found for you.")
+            await query.edit_message_text("No breakout details found. If you are not able to find information on breakout, please contact your respective RC Lead.")
     except Exception as e:
         logger.error(f"Error fetching breakout schedule: {str(e)}")
         await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
