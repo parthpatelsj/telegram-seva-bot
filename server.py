@@ -198,7 +198,6 @@ def search_breakouts():
     })
 
 
-
 @app.route('/confirm_breakout', methods=['POST'])
 def confirm_breakout():
     user_data = request.json
@@ -224,46 +223,12 @@ def confirm_breakout():
     # Extract data from the row
     person = confirmed_person.iloc[0]
     
-    # Detect CSV format by checking for column existence
-    is_balika_format = 'Goshthi' in person.index
+    # Detect CSV format by checking column names
+    is_old_format = 'Breakout #1 (10:30 - 12:00)' in person.index
     
     breakout_details = {}
     
-    if is_balika_format:
-        # Handle Balika/Kishori/Yuvati format
-        breakout1_session = person.get('Breakout #1', 'N/A')
-        breakout2_session = person.get('Breakout #2', 'N/A')
-        goshthi_session = person.get('Goshthi', 'N/A')
-        
-        breakout_details['Breakout #1'] = {
-            "Time": "10:30 - 12:00",
-            "Session": breakout1_session,
-            "Room": "N/A",  # Room is embedded in sessions for this format
-            "Display": breakout1_session if breakout1_session != 'N/A' else 'N/A'
-        }
-
-        breakout_details['Breakout #2'] = {
-            "Time": "2:00 - 3:30",
-            "Session": breakout2_session,
-            "Room": "N/A",
-            "Display": breakout2_session if breakout2_session != 'N/A' else 'N/A'
-        }
-        
-        ghoshti = {
-            "Time": "3:45 - 4:45",
-            "Session": goshthi_session,
-            "Room": "N/A",
-            "Display": goshthi_session if goshthi_session != 'N/A' else 'N/A'
-        }
-        
-        center_planning = {
-            "Time": "N/A",
-            "Session": "N/A",
-            "Room": "N/A",
-            "Display": "N/A"
-        }
-        
-    else:
+    if is_old_format:
         # Handle original format with separate room columns
         breakout1_session = person.get('Breakout #1 (10:30 - 12:00)', 'N/A')
         breakout1_room = person.get('Room Number', 'N/A')
@@ -285,12 +250,13 @@ def confirm_breakout():
 
         breakout3_session = person.get('Breakout #3 (8:45 - 9:45)', 'N/A')
         breakout3_room = person.get('Room Number.2', 'N/A')
-        breakout_details['Breakout #3'] = {
-            "Time": "8:45 - 9:45",
-            "Session": breakout3_session,
-            "Room": breakout3_room,
-            "Display": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
-        }
+        if breakout3_session != 'N/A':
+            breakout_details['Breakout #3'] = {
+                "Time": "8:45 - 9:45",
+                "Session": breakout3_session,
+                "Room": breakout3_room,
+                "Display": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
+            }
 
         center_planning_session = person.get('Center Planning (4:30 - 6:00)', 'N/A')
         center_planning_room = person.get('Room Number.3', 'N/A')
@@ -308,6 +274,45 @@ def confirm_breakout():
             "Session": ghoshti_session,
             "Room": ghoshti_room,
             "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
+        }
+    else:
+        # Handle Balika/Kishori/Yuvati format
+        breakout1_session = person.get('Breakout #1', 'N/A')
+        breakout_details['Breakout #1'] = {
+            "Time": "10:30 - 12:00",
+            "Session": breakout1_session,
+            "Room": "N/A",
+            "Display": breakout1_session if breakout1_session != 'N/A' else 'N/A'
+        }
+
+        breakout2_session = person.get('Breakout #2', 'N/A')
+        breakout_details['Breakout #2'] = {
+            "Time": "2:00 - 3:30",
+            "Session": breakout2_session,
+            "Room": "N/A",
+            "Display": breakout2_session if breakout2_session != 'N/A' else 'N/A'
+        }
+
+        # Parse room from Goshthi field (e.g., "4 - Room 5" -> "Room 5")
+        goshthi = person.get('Goshthi', 'N/A')
+        if ' - ' in str(goshthi):
+            room_info = str(goshthi).split(' - ')[1]
+        else:
+            room_info = 'N/A'
+
+        ghoshti = {
+            "Time": "3:45 - 4:45",
+            "Session": str(goshthi).split(' - ')[0] if ' - ' in str(goshthi) else str(goshthi),
+            "Room": room_info,
+            "Display": goshthi if goshthi != 'N/A' else 'N/A'
+        }
+        
+        # No Center Planning in this format
+        center_planning = {
+            "Time": "N/A",
+            "Session": "N/A",
+            "Room": "N/A",
+            "Display": "N/A"
         }
 
     # Build the response
