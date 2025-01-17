@@ -277,26 +277,42 @@ def confirm_breakout():
 
         if not is_ibreakout:
             # Handle ebreakouts format
-            ebreakout_columns = [
-                ('Breakout #1', 'Breakout #1 (10:30 - 12:00)', 'Room Number', '10:30 - 12:00'),
-                ('Breakout #2', 'Breakout #2 (6:00 - 7:30)', 'Room Number.1', '6:00 - 7:30'),
-                ('Breakout #3', 'Breakout #3 (8:45 - 9:45)', 'Room Number.2', '8:45 - 9:45')
-            ]
+            # Breakout #1
+            session1 = format_session(person['Breakout #1 (10:30 - 12:00)'])
+            room1 = format_room(person['Room Number'])
+            if session1 != "N/A":
+                breakout_details['Breakout #1'] = {
+                    "Time": "10:30 - 12:00",
+                    "Session": session1,
+                    "Room": room1,
+                    "Display": f"{session1} (Room {room1})" if session1 != 'N/A' else 'N/A'
+                }
 
-            for breakout_num, session_col, room_col, time in ebreakout_columns:
-                session = format_session(person.get(session_col, 'N/A'))
-                room = format_room(person.get(room_col, 'N/A'))
-                if session != "N/A":
-                    breakout_details[breakout_num] = {
-                        "Time": time,
-                        "Session": session,
-                        "Room": room,
-                        "Display": f"{session} (Room {room})" if session != 'N/A' else 'N/A'
-                    }
+            # Breakout #2
+            session2 = format_session(person['Breakout #2 (6:00 - 7:30)'])
+            room2 = format_room(person['Room Number_1'])  # Note the underscore instead of period
+            if session2 != "N/A":
+                breakout_details['Breakout #2'] = {
+                    "Time": "6:00 - 7:30",
+                    "Session": session2,
+                    "Room": room2,
+                    "Display": f"{session2} (Room {room2})" if session2 != 'N/A' else 'N/A'
+                }
 
-            # Handle Center Planning for ebreakouts
-            center_planning_session = format_session(person.get('Center Planning (4:30 - 6:00)', 'N/A'))
-            center_planning_room = format_room(person.get('Room Number.3', 'N/A'))
+            # Breakout #3
+            session3 = format_session(person['Breakout #3 (8:45 - 9:45)'])
+            room3 = format_room(person['Room Number_2'])  # Note the underscore instead of period
+            if session3 != "N/A" and session3 != "":
+                breakout_details['Breakout #3'] = {
+                    "Time": "8:45 - 9:45",
+                    "Session": session3,
+                    "Room": room3,
+                    "Display": f"{session3} (Room {room3})" if session3 != 'N/A' else 'N/A'
+                }
+
+            # Handle Center Planning
+            center_planning_session = format_session(person['Center Planning (4:30 - 6:00)'])
+            center_planning_room = format_room(person['Room Number_3'])  # Note the underscore instead of period
             center_planning = {
                 "Time": "4:30 - 6:00",
                 "Session": center_planning_session,
@@ -304,9 +320,9 @@ def confirm_breakout():
                 "Display": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
             }
 
-            # Handle Ghoshti for ebreakouts
-            ghoshti_session = format_session(person.get('Ghosthi Group (3:15 - 4:00)', 'N/A'))
-            ghoshti_room = format_room(person.get('Room Number.4', 'N/A'))
+            # Handle Ghoshti
+            ghoshti_session = format_session(person['Ghosthi Group (3:15 - 4:00)'])
+            ghoshti_room = format_room(person['Room Number_4'])  # Note the underscore instead of period
             ghoshti = {
                 "Time": "3:15 - 4:00",
                 "Session": ghoshti_session,
@@ -315,7 +331,7 @@ def confirm_breakout():
             }
 
         else:
-            # Handle ibreakouts format
+            # Keep the existing ibreakouts handling as it's working correctly
             # Breakout #1
             breakout1_session = format_session(person.get('Breakout #1 10:30am-12pm', 'N/A'))
             breakout1_room = format_session(person.get('Breakout Room 1', 'N/A'))
@@ -338,7 +354,7 @@ def confirm_breakout():
                     "Display": f"{breakout2_session} ({breakout2_room})" if breakout2_room != "N/A" else breakout2_session
                 }
 
-            # Handle Center Planning for ibreakouts
+            # Handle Center Planning
             center_planning_session = format_session(person.get('Center Analysis 4:30-6pm', 'N/A'))
             center_planning = {
                 "Time": "4:30-6pm",
@@ -347,7 +363,7 @@ def confirm_breakout():
                 "Display": center_planning_session
             }
 
-            # Handle Ghoshti for ibreakouts
+            # Handle Ghoshti
             ghoshti_session = format_session(person.get('Goshti 3:15-4pm', 'N/A'))
             ghoshti = {
                 "Time": "3:15-4pm",
