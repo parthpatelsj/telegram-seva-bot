@@ -288,7 +288,6 @@ async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         await query.edit_message_text("Error fetching breakout schedule. Please try again later.")
 
 
-# Callback Handler: Confirm Breakout
 async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
@@ -314,17 +313,45 @@ async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
         data = response.json()
         details = data.get("details", {})
+        breakout_sessions = details.get("Breakout Sessions", {})
+        
+        # Build the message
         message = (
-            f"*Breakout Details Confirmed!*\n\n"
+            f"*📅 Your Schedule for RKC 2025*\n\n"
             f"👤 *Name:* {details.get('First Name')} {details.get('Last Name')}\n"
             f"🏠 *Center:* {details.get('Center')}\n"
             f"🛠 *Primary Seva:* {details.get('Primary Seva')}\n\n"
-            f"📘 *Breakout Sessions:*\n"
-            f"🔹 *Breakout #1:* {details.get('Breakout #1')}\n"
-            f"🔹 *Breakout #2:* {details.get('Breakout #2')}\n"
-            f"🔹 *Breakout #3:* {details.get('Breakout #3')}\n"
-            f"🔹 *Goshthi:* {details.get('Goshthi')}"
+            f"*📘 Breakout Sessions:*\n"
         )
+
+        # Add Breakout Sessions
+        for breakout_num in ["Breakout #1", "Breakout #2", "Breakout #3"]:
+            breakout = breakout_sessions.get(breakout_num, {})
+            if breakout.get("Session") != "N/A":
+                message += (
+                    f"🔹 *{breakout_num}* ({breakout.get('Time')})\n"
+                    f"    • {breakout.get('Session')}\n"
+                    f"    • Room {breakout.get('Room')}\n\n"
+                )
+
+        # Add Center Planning if available
+        center_planning = details.get("Center Planning", {})
+        if center_planning.get("Session") != "N/A":
+            message += (
+                f"*🏢 Center Planning* ({center_planning.get('Time')})\n"
+                f"    • {center_planning.get('Session')}\n"
+                f"    • Room {center_planning.get('Room')}\n\n"
+            )
+
+        # Add Ghoshti if available
+        ghoshti = details.get("Ghoshti", {})
+        if ghoshti.get("Session") != "N/A":
+            message += (
+                f"*👥 Ghoshti* ({ghoshti.get('Time')})\n"
+                f"    • {ghoshti.get('Session')}\n"
+                f"    • Room {ghoshti.get('Room')}\n"
+            )
+
         await query.edit_message_text(message, parse_mode="Markdown")
     except Exception as e:
         logger.error(f"Error confirming breakout details: {str(e)}")
