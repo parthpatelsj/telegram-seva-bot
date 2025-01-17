@@ -233,6 +233,7 @@ async def search_by_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE
             for opt in data["options"]:
                 # Construct the callback_data
                 callback_data = f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}"
+                logger.info(f"Generated callback_data: {callback_data}")
 
                 # Truncate callback_data intelligently
                 if len(callback_data) > 64:
