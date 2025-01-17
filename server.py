@@ -271,7 +271,13 @@ def confirm_breakout():
             return str(session)
 
         breakout_details = {}
-        is_ibreakout = 'Wing' in person.index
+        #is_ibreakout = 'Wing' in person.index
+        is_ibreakout = False
+        for col in person.index:
+            if col == 'Wing' and person['Wing'] in ['balika', 'kishori', 'yuvati']:  # Check if 'Wing' exists and matches one of the valid values
+                is_ibreakout = True
+                break
+
 
         if not is_ibreakout:
             # Handle ebreakouts format
