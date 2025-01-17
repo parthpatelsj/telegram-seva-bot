@@ -229,18 +229,26 @@ async def search_by_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE
         data = response.json()
         if "options" in data:
             # Multiple matches found; ask for confirmation
-            keyboard = [
-                [InlineKeyboardButton(f"{opt['First Name']} {opt['Last Name']} ({opt['Center']}, {opt['Primary Seva']})",
-                                      callback_data=f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}")]
-                for opt in data["options"]
-            ]
+            keyboard = []
+            for opt in data["options"]:
+                callback_data = f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}"
+                
+                # Truncate callback_data if it exceeds Telegram's limit
+                if len(callback_data) > 64:
+                    callback_data = callback_data[:64]
+
+                keyboard.append(
+                    [InlineKeyboardButton(
+                        f"{opt['First Name']} {opt['Last Name']} ({opt['Center']}, {opt['Primary Seva']})",
+                        callback_data=callback_data
+                    )]
+                )
+            
             reply_markup = InlineKeyboardMarkup(keyboard)
             await update.message.reply_text(data["message"], reply_markup=reply_markup)
         else:
             await update.message.reply_text("No breakout sessions found for the provided name.")
-    except Exception as e:
-        logger.error(f"Error searching breakout by full name: {str(e)}")
-        await update.message.reply_text("Error searching breakout by full name. Please try again later.")
+
 
 
 async def breakout_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
