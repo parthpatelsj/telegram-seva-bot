@@ -230,6 +230,7 @@ def search_breakouts():
         "options": options
     })
 
+
 @app.route('/confirm_breakout', methods=['POST'])
 def confirm_breakout():
     try:
@@ -255,21 +256,16 @@ def confirm_breakout():
 
         # Extract data from the row
         person = matches.iloc[0]
-        # Replace the current is_ibreakout detection with:
-        columns = set(person.index)
-        is_ibreakout = 'Room Number' not in columns
         
         # Helper function to format room numbers
         def format_room(room):
             if pd.isna(room):
                 return "N/A"
             try:
-                # Convert to float first to handle both string and numeric inputs
                 num = float(room)
-                # Check if it's a whole number
                 if num.is_integer():
-                    return str(int(num))  # Remove decimal for whole numbers
-                return str(num)  # Keep decimal if it's not a whole number
+                    return str(int(num))
+                return str(num)
             except (ValueError, TypeError):
                 return str(room)
         
@@ -281,16 +277,11 @@ def confirm_breakout():
 
         breakout_details = {}
         
-        # Check if person is from ibreakouts.csv (looking for indicators like Wing or specific columns)
-        is_ibreakout = False
-        for col in person.index:
-            
-            if col == 'Wing' and person['Wing'] in ['Balika', 'Kishori', 'Yuvati', 'iBKY']:  # Check if 'Wing' exists and matches one of the valid values
-                is_ibreakout = True
-                break
+        # Determine if person is from ibreakouts by checking for Wing column
+        is_ibreakout = 'Wing' in person.index
 
-        if 'Breakout #1 (10:30 - 12:00)' in person.index:
-            # Handle original format with separate room columns
+        if not is_ibreakout:
+            # Handle ebreakouts format
             breakout1_session = format_session(person.get('Breakout #1 (10:30 - 12:00)', 'N/A'))
             breakout1_room = format_room(person.get('Room Number', 'N/A'))
             if breakout1_session != "N/A":
@@ -339,7 +330,7 @@ def confirm_breakout():
                 "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
             }
         else:
-            # Handle new format (ibreakouts.csv)
+            # Handle ibreakouts format
             breakout1_session = format_session(person.get('Breakout #1 10:30am-12pm', 'N/A'))
             breakout1_room = format_session(person.get('Breakout Room 1', 'N/A'))
             if breakout1_session != "N/A":
@@ -347,7 +338,7 @@ def confirm_breakout():
                     "Time": "10:30am-12pm",
                     "Session": breakout1_session,
                     "Room": breakout1_room,
-                    "Display": f"{breakout1_session} ({breakout1_room})"
+                    "Display": f"{breakout1_session} ({breakout1_room})" if breakout1_room != "N/A" else breakout1_session
                 }
 
             breakout2_session = format_session(person.get('Breakout #2 6pm-7:30pm', 'N/A'))
@@ -357,24 +348,24 @@ def confirm_breakout():
                     "Time": "6pm-7:30pm",
                     "Session": breakout2_session,
                     "Room": breakout2_room,
-                    "Display": f"{breakout2_session} ({breakout2_room})"
+                    "Display": f"{breakout2_session} ({breakout2_room})" if breakout2_room != "N/A" else breakout2_session
                 }
 
-            # Handle Center Planning
+            # Handle Center Planning for ibreakouts
             center_planning_session = format_session(person.get('Center Analysis 4:30-6pm', 'N/A'))
             center_planning = {
                 "Time": "4:30-6pm",
                 "Session": center_planning_session,
-                "Room": "N/A",  # For ibreakouts, the room is often included in the session name
-                "Display": center_planning_session
+                "Room": "N/A",
+                "Display": center_planning_session if "Any rooms - reference Map" not in str(center_planning_session) else "Please refer to room map for location"
             }
 
-            # Handle Goshti
+            # Handle Goshti for ibreakouts
             ghoshti_session = format_session(person.get('Goshti 3:15-4pm', 'N/A'))
             ghoshti = {
                 "Time": "3:15-4pm",
                 "Session": ghoshti_session,
-                "Room": "N/A",  # For ibreakouts, the room is often included in the session name
+                "Room": "N/A",
                 "Display": ghoshti_session
             }
 
@@ -396,7 +387,7 @@ def confirm_breakout():
         })
     
     except Exception as e:
-        print(f"Error in confirm_breakout: {str(e)}")  # Add this for debugging
+        print(f"Error in confirm_breakout: {str(e)}")
         return jsonify({"message": "Error confirming breakout details.", "error": str(e)}), 500
 
 
