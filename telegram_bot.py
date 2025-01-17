@@ -358,7 +358,7 @@ async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         # Send the appropriate map based on source
         try:
             source = details.get("Source")
-            if source == "ibreakouts":
+            if source == "ibky":
                 # Send iBreakouts map
                 response = requests.get(f"{BASE_URL}/ibreakouts_map")
                 if response.status_code == 200:

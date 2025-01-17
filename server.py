@@ -26,6 +26,17 @@ def connect_db():
     except Exception as e:
         return str(e)  # Return the error message if connection fails
 
+def format_room(room):
+    if pd.isna(room):
+        return ""
+    try:
+        num = float(room)
+        if num.is_integer():
+            return str(int(num))  # Convert float to int for whole numbers
+        return str(room).strip()
+    except (ValueError, TypeError):
+        return str(room).strip()
+
 # Default route to avoid 404 on root
 @app.route('/')
 def home():
@@ -260,24 +271,24 @@ def confirm_breakout():
             breakout_details['Breakout #1'] = {
                 "Time": person['Breakout1_Time'],
                 "Session": person['Breakout1_Session'],
-                "Room": person['Breakout1_Room'],
-                "Display": f"{person['Breakout1_Session']} ({person['Breakout1_Room']})"
+                "Room": format_room(person['Breakout1_Room']),
+                "Display": f"{person['Breakout1_Session']} ({format_room(person['Breakout1_Room'])})"
             }
 
         if person['Breakout2_Session'] and person['Breakout2_Session'] != 'nan':
             breakout_details['Breakout #2'] = {
                 "Time": person['Breakout2_Time'],
                 "Session": person['Breakout2_Session'],
-                "Room": person['Breakout2_Room'],
-                "Display": f"{person['Breakout2_Session']} ({person['Breakout2_Room']})"
+                "Room": format_room(person['Breakout2_Room']),
+                "Display": f"{person['Breakout2_Session']} ({format_room(person['Breakout2_Room'])})"
             }
 
         if person['Breakout3_Session'] and person['Breakout3_Session'] != 'nan':
             breakout_details['Breakout #3'] = {
                 "Time": person['Breakout3_Time'],
                 "Session": person['Breakout3_Session'],
-                "Room": person['Breakout3_Room'],
-                "Display": f"{person['Breakout3_Session']} ({person['Breakout3_Room']})"
+                "Room": format_room(person['Breakout3_Room']),
+                "Display": f"{person['Breakout3_Session']} ({format_room(person['Breakout3_Room'])})"
             }
 
         # Build response
@@ -290,19 +301,19 @@ def confirm_breakout():
             "Center Planning": {
                 "Time": person['Center_Planning_Time'],
                 "Session": person['Center_Planning_Session'],
-                "Room": person['Center_Planning_Room'],
-                "Display": (f"{person['Center_Planning_Session']} ({person['Center_Planning_Room']})" 
+                "Room": format_room(person['Center_Planning_Room']),
+                "Display": (f"{person['Center_Planning_Session']} ({format_room(person['Center_Planning_Room'])})" 
                           if person['Center_Planning_Room'] and person['Center_Planning_Room'] != 'nan'
                           else person['Center_Planning_Session'])
             },
             "Ghoshti": {
                 "Time": person['Ghoshti_Time'],
                 "Session": person['Ghoshti_Session'],
-                "Room": str(person['Ghoshti_Room']) if pd.notna(person['Ghoshti_Room']) else "",
-                "Display": (f"{person['Ghoshti_Session']} ({str(person['Ghoshti_Room'])})"
+                "Room": format_room(person['Ghoshti_Room']) if pd.notna(person['Ghoshti_Room']) else "",
+                "Display": (f"{person['Ghoshti_Session']} ({format_room(person['Ghoshti_Room'])})"
                           if pd.notna(person['Ghoshti_Room'])
                           else person['Ghoshti_Session'])
-            },
+            }
             "Source": person['Type'].lower()  # This will be either 'ibky' or 'ebky'
         }
 
