@@ -200,158 +200,145 @@ def search_breakouts():
 
 @app.route('/confirm_breakout', methods=['POST'])
 def confirm_breakout():
-    user_data = request.json
-    first_name = user_data.get('First Name', '').strip().title()
-    last_name = user_data.get('Last Name', '').strip().title()
-    center = user_data.get('Center', '').strip()
-    seva = user_data.get('Primary Seva', '').strip()
+    try:
+        user_data = request.json
+        first_name = user_data.get('First Name', '').strip().title()
+        last_name = user_data.get('Last Name', '').strip().title()
+        center = user_data.get('Center', '').strip()
+        seva = user_data.get('Primary Seva', '').strip()
 
-    if not all([first_name, last_name, center, seva]):
-        return jsonify({"message": "Please provide complete details to confirm your identity."}), 400
+        if not all([first_name, last_name, center, seva]):
+            return jsonify({"message": "Please provide complete details to confirm your identity."}), 400
 
-    # Find which CSV contains this person
-    is_ibreakout = False
-    person = None
-    
-    # First check ibreakouts.csv
-    i_breakouts = pd.read_csv('ibreakouts.csv')
-    matches = i_breakouts[
-        (i_breakouts['First Name'] == first_name) &
-        (i_breakouts['Last Name'] == last_name) &
-        (i_breakouts['Center'] == center) &
-        (i_breakouts['Primary Seva'] == seva)
-    ]
-    
-    if not matches.empty:
-        person = matches.iloc[0]
-        is_ibreakout = True
-    else:
-        # If not found, check ebreakouts.csv
-        e_breakouts = pd.read_csv('ebreakouts.csv')
-        matches = e_breakouts[
-            (e_breakouts['First Name'] == first_name) &
-            (e_breakouts['Last Name'] == last_name) &
-            (e_breakouts['Center'] == center) &
-            (e_breakouts['Primary Seva'] == seva)
+        # Use the pre-loaded combined_breakouts
+        matches = combined_breakouts[
+            (combined_breakouts['First Name'] == first_name) &
+            (combined_breakouts['Last Name'] == last_name) &
+            (combined_breakouts['Center'] == center) &
+            (combined_breakouts['Primary Seva'] == seva)
         ]
-        if not matches.empty:
-            person = matches.iloc[0]
-            is_ibreakout = False
-        else:
+
+        if matches.empty:
             return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
 
-    # Format breakout session details
-    breakout_details = {}
-    
-    # Check if old format (with Room Number columns) or new format (with embedded room info)
-    is_old_format = 'Breakout #1 (10:30 - 12:00)' in person.index
-    
-    if is_old_format:
-        # Handle original format with separate room columns
-        breakout1_session = person.get('Breakout #1 (10:30 - 12:00)', 'N/A')
-        breakout1_room = person.get('Room Number', 'N/A')
-        breakout_details['Breakout #1'] = {
-            "Time": "10:30 - 12:00",
-            "Session": breakout1_session,
-            "Room": breakout1_room,
-            "Display": f"{breakout1_session} (Room {breakout1_room})" if breakout1_session != 'N/A' else 'N/A'
-        }
-
-        breakout2_session = person.get('Breakout #2 (6:00 - 7:30)', 'N/A')
-        breakout2_room = person.get('Room Number.1', 'N/A')
-        breakout_details['Breakout #2'] = {
-            "Time": "6:00 - 7:30",
-            "Session": breakout2_session,
-            "Room": breakout2_room,
-            "Display": f"{breakout2_session} (Room {breakout2_room})" if breakout2_session != 'N/A' else 'N/A'
-        }
-
-        breakout3_session = person.get('Breakout #3 (8:45 - 9:45)', 'N/A')
-        breakout3_room = person.get('Room Number.2', 'N/A')
-        if breakout3_session != 'N/A':
-            breakout_details['Breakout #3'] = {
-                "Time": "8:45 - 9:45",
-                "Session": breakout3_session,
-                "Room": breakout3_room,
-                "Display": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
+        # Extract data from the row
+        person = matches.iloc[0]
+        
+        # Detect format based on columns
+        is_old_format = 'Breakout #1 (10:30 - 12:00)' in person.index
+        is_ibreakout = 'Wing' in person.index  # Assuming Wing column is only in ibreakouts.csv
+        
+        breakout_details = {}
+        
+        if is_old_format:
+            # Handle original format with separate room columns
+            breakout1_session = person.get('Breakout #1 (10:30 - 12:00)', 'N/A')
+            breakout1_room = person.get('Room Number', 'N/A')
+            breakout_details['Breakout #1'] = {
+                "Time": "10:30 - 12:00",
+                "Session": breakout1_session,
+                "Room": breakout1_room,
+                "Display": f"{breakout1_session} (Room {breakout1_room})" if breakout1_session != 'N/A' else 'N/A'
             }
 
-        center_planning_session = person.get('Center Planning (4:30 - 6:00)', 'N/A')
-        center_planning_room = person.get('Room Number.3', 'N/A')
-        center_planning = {
-            "Time": "4:30 - 6:00",
-            "Session": center_planning_session,
-            "Room": center_planning_room,
-            "Display": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
-        }
+            breakout2_session = person.get('Breakout #2 (6:00 - 7:30)', 'N/A')
+            breakout2_room = person.get('Room Number.1', 'N/A')
+            breakout_details['Breakout #2'] = {
+                "Time": "6:00 - 7:30",
+                "Session": breakout2_session,
+                "Room": breakout2_room,
+                "Display": f"{breakout2_session} (Room {breakout2_room})" if breakout2_session != 'N/A' else 'N/A'
+            }
 
-        ghoshti_session = person.get('Ghosthi Group (3:15 - 4:00)', 'N/A')
-        ghoshti_room = person.get('Room Number.4', 'N/A')
-        ghoshti = {
-            "Time": "3:15 - 4:00",
-            "Session": ghoshti_session,
-            "Room": ghoshti_room,
-            "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
-        }
-    else:
-        # Handle new format
-        breakout1_session = person.get('Breakout #1', 'N/A')
-        breakout_details['Breakout #1'] = {
-            "Time": "10:30 - 12:00",
-            "Session": breakout1_session,
-            "Room": "N/A",
-            "Display": breakout1_session if breakout1_session != 'N/A' else 'N/A'
-        }
+            breakout3_session = person.get('Breakout #3 (8:45 - 9:45)', 'N/A')
+            breakout3_room = person.get('Room Number.2', 'N/A')
+            if breakout3_session != 'N/A':
+                breakout_details['Breakout #3'] = {
+                    "Time": "8:45 - 9:45",
+                    "Session": breakout3_session,
+                    "Room": breakout3_room,
+                    "Display": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
+                }
 
-        breakout2_session = person.get('Breakout #2', 'N/A')
-        breakout_details['Breakout #2'] = {
-            "Time": "2:00 - 3:30",
-            "Session": breakout2_session,
-            "Room": "N/A",
-            "Display": breakout2_session if breakout2_session != 'N/A' else 'N/A'
-        }
+            center_planning_session = person.get('Center Planning (4:30 - 6:00)', 'N/A')
+            center_planning_room = person.get('Room Number.3', 'N/A')
+            center_planning = {
+                "Time": "4:30 - 6:00",
+                "Session": center_planning_session,
+                "Room": center_planning_room,
+                "Display": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
+            }
 
-        # Parse room from Goshthi field (e.g., "4 - Room 5" -> "Room 5")
-        goshthi = person.get('Goshthi', 'N/A')
-        if ' - ' in str(goshthi):
-            room_info = str(goshthi).split(' - ')[1]
-            session_info = str(goshthi).split(' - ')[0]
+            ghoshti_session = person.get('Ghosthi Group (3:15 - 4:00)', 'N/A')
+            ghoshti_room = person.get('Room Number.4', 'N/A')
+            ghoshti = {
+                "Time": "3:15 - 4:00",
+                "Session": ghoshti_session,
+                "Room": ghoshti_room,
+                "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
+            }
         else:
-            room_info = 'N/A'
-            session_info = str(goshthi)
+            # Handle new format
+            breakout1_session = person.get('Breakout #1', 'N/A')
+            breakout_details['Breakout #1'] = {
+                "Time": "10:30 - 12:00",
+                "Session": breakout1_session,
+                "Room": "N/A",
+                "Display": breakout1_session if breakout1_session != 'N/A' else 'N/A'
+            }
 
-        ghoshti = {
-            "Time": "3:45 - 4:45",
-            "Session": session_info,
-            "Room": room_info,
-            "Display": goshthi if goshthi != 'N/A' else 'N/A'
+            breakout2_session = person.get('Breakout #2', 'N/A')
+            breakout_details['Breakout #2'] = {
+                "Time": "2:00 - 3:30",
+                "Session": breakout2_session,
+                "Room": "N/A",
+                "Display": breakout2_session if breakout2_session != 'N/A' else 'N/A'
+            }
+
+            # Parse room from Goshthi field (e.g., "4 - Room 5" -> "Room 5")
+            goshthi = person.get('Goshthi', 'N/A')
+            if ' - ' in str(goshthi):
+                room_info = str(goshthi).split(' - ')[1]
+                session_info = str(goshthi).split(' - ')[0]
+            else:
+                room_info = 'N/A'
+                session_info = str(goshthi)
+
+            ghoshti = {
+                "Time": "3:45 - 4:45",
+                "Session": session_info,
+                "Room": room_info,
+                "Display": goshthi if goshthi != 'N/A' else 'N/A'
+            }
+            
+            # No Center Planning in new format
+            center_planning = {
+                "Time": "N/A",
+                "Session": "N/A",
+                "Room": "N/A",
+                "Display": "N/A"
+            }
+
+        # Build the response
+        response_details = {
+            "First Name": person['First Name'],
+            "Last Name": person['Last Name'],
+            "Center": person['Center'],
+            "Primary Seva": person['Primary Seva'],
+            "Breakout Sessions": breakout_details,
+            "Center Planning": center_planning,
+            "Ghoshti": ghoshti,
+            "Source": "ibreakouts" if is_ibreakout else "ebreakouts"
         }
-        
-        # No Center Planning in new format
-        center_planning = {
-            "Time": "N/A",
-            "Session": "N/A",
-            "Room": "N/A",
-            "Display": "N/A"
-        }
 
-    # Build the response
-    response_details = {
-        "First Name": person['First Name'],
-        "Last Name": person['Last Name'],
-        "Center": person['Center'],
-        "Primary Seva": person['Primary Seva'],
-        "Breakout Sessions": breakout_details,
-        "Center Planning": center_planning,
-        "Ghoshti": ghoshti,
-        "Source": "ibreakouts" if is_ibreakout else "ebreakouts"
-    }
-
-    return jsonify({
-        "message": "Breakout details confirmed!",
-        "details": response_details
-    })
-
+        return jsonify({
+            "message": "Breakout details confirmed!",
+            "details": response_details
+        })
+    
+    except Exception as e:
+        print(f"Error in confirm_breakout: {str(e)}")  # Add this for debugging
+        return jsonify({"message": "Error confirming breakout details.", "error": str(e)}), 500
 
 @app.route('/search_by_full_name', methods=['POST'])
 def search_by_full_name():
