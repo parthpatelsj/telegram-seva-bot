@@ -209,24 +209,42 @@ def confirm_breakout():
     if not all([first_name, last_name, center, seva]):
         return jsonify({"message": "Please provide complete details to confirm your identity."}), 400
 
-    # Filter the dataset for the person
-    confirmed_person = combined_breakouts[
-        (combined_breakouts['First Name'] == first_name) &
-        (combined_breakouts['Last Name'] == last_name) &
-        (combined_breakouts['Center'] == center) &
-        (combined_breakouts['Primary Seva'] == seva)
+    # Find which CSV contains this person
+    is_ibreakout = False
+    person = None
+    
+    # First check ibreakouts.csv
+    i_breakouts = pd.read_csv('ibreakouts.csv')
+    matches = i_breakouts[
+        (i_breakouts['First Name'] == first_name) &
+        (i_breakouts['Last Name'] == last_name) &
+        (i_breakouts['Center'] == center) &
+        (i_breakouts['Primary Seva'] == seva)
     ]
-
-    if confirmed_person.empty:
-        return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
-
-    # Extract data from the row
-    person = confirmed_person.iloc[0]
     
-    # Detect CSV format by checking column names
-    is_old_format = 'Breakout #1 (10:30 - 12:00)' in person.index
-    
+    if not matches.empty:
+        person = matches.iloc[0]
+        is_ibreakout = True
+    else:
+        # If not found, check ebreakouts.csv
+        e_breakouts = pd.read_csv('ebreakouts.csv')
+        matches = e_breakouts[
+            (e_breakouts['First Name'] == first_name) &
+            (e_breakouts['Last Name'] == last_name) &
+            (e_breakouts['Center'] == center) &
+            (e_breakouts['Primary Seva'] == seva)
+        ]
+        if not matches.empty:
+            person = matches.iloc[0]
+            is_ibreakout = False
+        else:
+            return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
+
+    # Format breakout session details
     breakout_details = {}
+    
+    # Check if old format (with Room Number columns) or new format (with embedded room info)
+    is_old_format = 'Breakout #1 (10:30 - 12:00)' in person.index
     
     if is_old_format:
         # Handle original format with separate room columns
@@ -276,7 +294,7 @@ def confirm_breakout():
             "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
         }
     else:
-        # Handle Balika/Kishori/Yuvati format
+        # Handle new format
         breakout1_session = person.get('Breakout #1', 'N/A')
         breakout_details['Breakout #1'] = {
             "Time": "10:30 - 12:00",
@@ -297,17 +315,19 @@ def confirm_breakout():
         goshthi = person.get('Goshthi', 'N/A')
         if ' - ' in str(goshthi):
             room_info = str(goshthi).split(' - ')[1]
+            session_info = str(goshthi).split(' - ')[0]
         else:
             room_info = 'N/A'
+            session_info = str(goshthi)
 
         ghoshti = {
             "Time": "3:45 - 4:45",
-            "Session": str(goshthi).split(' - ')[0] if ' - ' in str(goshthi) else str(goshthi),
+            "Session": session_info,
             "Room": room_info,
             "Display": goshthi if goshthi != 'N/A' else 'N/A'
         }
         
-        # No Center Planning in this format
+        # No Center Planning in new format
         center_planning = {
             "Time": "N/A",
             "Session": "N/A",
@@ -323,7 +343,8 @@ def confirm_breakout():
         "Primary Seva": person['Primary Seva'],
         "Breakout Sessions": breakout_details,
         "Center Planning": center_planning,
-        "Ghoshti": ghoshti
+        "Ghoshti": ghoshti,
+        "Source": "ibreakouts" if is_ibreakout else "ebreakouts"
     }
 
     return jsonify({
@@ -355,6 +376,19 @@ def search_by_full_name():
         "options": options
     })
 
+@app.route('/ebreakouts_map', methods=['GET'])
+def get_ebreakouts_map():
+    try:
+        return send_file('eBreakoutsMap.jpg', mimetype='image/jpeg')
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ibreakouts_map', methods=['GET'])
+def get_ibreakouts_map():
+    try:
+        return send_file('iBreakoutsMap.jpg', mimetype='image/jpeg')
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 ### Stuff from seva

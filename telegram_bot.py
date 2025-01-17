@@ -327,7 +327,7 @@ async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         # Add Breakout Sessions
         for breakout_num in ["Breakout #1", "Breakout #2", "Breakout #3"]:
             breakout = breakout_sessions.get(breakout_num, {})
-            if breakout.get("Session") != "N/A":
+            if breakout and breakout.get("Session") != "N/A":
                 message += (
                     f"🔹 *{breakout_num}* ({breakout.get('Time')})\n"
                     f"    • {breakout.get('Session')}\n"
@@ -352,7 +352,41 @@ async def confirm_breakout(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 f"    • Room {ghoshti.get('Room')}\n"
             )
 
+        # Send the schedule message first
         await query.edit_message_text(message, parse_mode="Markdown")
+
+        # Send the appropriate map based on source
+        try:
+            source = details.get("Source")
+            if source == "ibreakouts":
+                # Send iBreakouts map
+                response = requests.get(f"{BASE_URL}/ibreakouts_map")
+                if response.status_code == 200:
+                    image_data = BytesIO(response.content)
+                    image_data.seek(0)
+                    await context.bot.send_photo(
+                        chat_id=query.message.chat_id,
+                        photo=InputFile(image_data, filename="iBreakoutsMap.jpg"),
+                        caption="📍 Room Map for your sessions"
+                    )
+            else:
+                # Send eBreakouts map
+                response = requests.get(f"{BASE_URL}/ebreakouts_map")
+                if response.status_code == 200:
+                    image_data = BytesIO(response.content)
+                    image_data.seek(0)
+                    await context.bot.send_photo(
+                        chat_id=query.message.chat_id,
+                        photo=InputFile(image_data, filename="eBreakoutsMap.jpg"),
+                        caption="📍 Room Map for your sessions"
+                    )
+        except Exception as img_e:
+            logger.error(f"Error sending map: {str(img_e)}")
+            await context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text="Unable to load room map. Please try again later."
+            )
+
     except Exception as e:
         logger.error(f"Error confirming breakout details: {str(e)}")
         await query.edit_message_text("Error confirming breakout details. Please try again later.")
