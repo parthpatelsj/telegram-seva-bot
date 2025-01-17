@@ -184,7 +184,6 @@ def search_breakouts():
         return jsonify({"message": "Please provide your first name."}), 400
 
     matches = combined_breakouts[combined_breakouts['First Name'] == user_first_name]
-
     if matches.empty:
         return jsonify({
             "message": "No match found for your name. Please provide your full name (First and Last).",
@@ -215,6 +214,25 @@ def confirm_breakout():
             (combined_breakouts['Last Name'] == last_name) &
             (combined_breakouts['Center'] == center) &
             (combined_breakouts['Primary Seva'] == seva)
+        ]
+            
+        eSideBreakouts = pd.read_csv("ebreakouts.csv")
+        eSideBreakouts = pd.concat(eSideBreakouts, ignore_index=True)
+        iSideBreakouts = pd.read_csv("ibreakouts.csv")
+        iSideBreakouts = pd.concat(iSideBreakouts, ignore_index=True)
+
+        eSideMatches = eSideBreakouts[
+            (eSideBreakouts['First Name'] == first_name) &
+            (eSideBreakouts['Last Name'] == last_name) &
+            (eSideBreakouts['Center'] == center) &
+            (eSideBreakouts['Primary Seva'] == seva)
+        ]
+
+        iSideMatches = iSideBreakouts[
+            (iSideBreakouts['First Name'] == first_name) &
+            (iSideBreakouts['Last Name'] == last_name) &
+            (iSideBreakouts['Center'] == center) &
+            (iSideBreakouts['Primary Seva'] == seva)
         ]
 
         if matches.empty:
@@ -250,7 +268,9 @@ def confirm_breakout():
         
         # Check if person is from ibreakouts.csv (looking for indicators like Wing or specific columns)
         is_ibreakout = False
-        for col in person.index:
+        eSidePerson = eSideMatches.iloc[0]
+        iSidePerson = iSideMatches.iloc[0]
+        for col in iSidePerson.index if eSideMatches.empty else eSidePerson.index:
             if col in ['Wing', 'Goshthi']:  # Add any other columns unique to ibreakouts.csv
                 is_ibreakout = True
                 break
