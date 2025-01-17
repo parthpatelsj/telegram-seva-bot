@@ -7,7 +7,8 @@
           { "name": "Penne Arrabiata", "type": "Main Item" },
           { "name": "Fettucine Alfredo", "type": "Main Item" },
           { "name": "Santa Fe Salad", "type": "Side Item" },
-          { "name": "Sparkling Punch", "type": "Drink" }
+          { "name": "Sparkling Punch", "type": "Drink" }, 
+          { "name": "Cheese Cake w/toppings", "type": "Dessert" } 
         ],
         "timing": "7:30 PM"
       }
@@ -35,7 +36,8 @@
           { "name": "Chipotle Bowls", "type": "Main Item" },
           { "name": "Salsa Bar", "type": "Main Item" },
           { "name": "Live Quesadillas", "type": "Main Item" },
-          { "name": "Spicy Queso", "type": "Main Item" }
+          { "name": "Spicy Queso", "type": "Main Item" }, 
+          { "name": "Chocolate Mousse", "type": "Dessert" } 
         ],
         "timing": "7:30 PM"
       }
