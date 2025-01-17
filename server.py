@@ -338,7 +338,7 @@ def confirm_breakout():
                 "Room": ghoshti_room,
                 "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
             }
-        else:
+       else:
             # Handle new format (ibreakouts.csv)
             breakout1_session = format_session(person.get('Breakout #1', 'N/A'))
             breakout1_room = format_session(person.get('Breakout Room 1', 'N/A'))
@@ -350,7 +350,7 @@ def confirm_breakout():
                     "Display": f"{breakout1_session} ({breakout1_room})"
                 }
 
-            breakout2_session = format_session(person.get('Breakout #2', 'N/A'))
+            breakout2_session = format_session(person.get('Breakout #2 ', 'N/A'))  # Note the space after #2
             breakout2_room = format_session(person.get('Breakout Room 2', 'N/A'))
             if breakout2_session != "N/A":
                 breakout_details['Breakout #2'] = {
@@ -360,22 +360,14 @@ def confirm_breakout():
                     "Display": f"{breakout2_session} ({breakout2_room})"
                 }
 
-            # Handle Goshti (note the spelling change)
-            goshti = format_session(person.get('Goshti', 'N/A'))
-            if goshti != "N/A":
-                ghoshti = {
-                    "Time": "3:15-4pm",
-                    "Session": goshti,
-                    "Room": "N/A",
-                    "Display": goshti
-                }
-            else:
-                ghoshti = {
-                    "Time": "3:15-4pm",
-                    "Session": "N/A",
-                    "Room": "N/A",
-                    "Display": "N/A"
-                }
+            # Handle Center Planning
+            center_planning_room = format_session(person.get('Center Analysis 4:30-6pm', 'N/A'))
+            center_planning = {
+                "Time": "4:30-6pm",
+                "Session": center_planning_room,
+                "Room": "N/A",
+                "Display": center_planning_room
+            }
 
         # Build the response
         response_details = {
