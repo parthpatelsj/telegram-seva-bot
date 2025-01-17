@@ -242,7 +242,6 @@ def confirm_breakout():
         if not all([first_name, last_name, center, seva]):
             return jsonify({"message": "Please provide complete details to confirm your identity."}), 400
 
-        # Use the pre-loaded combined_breakouts
         matches = combined_breakouts[
             (combined_breakouts['First Name'] == first_name) &
             (combined_breakouts['Last Name'] == last_name) &
@@ -253,27 +252,19 @@ def confirm_breakout():
         if matches.empty:
             return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
 
-        # Extract data from the row
         person = matches.iloc[0]
-        # Replace the current is_ibreakout detection with:
-        columns = set(person.index)
-        is_ibreakout = 'Room Number' not in columns
         
-        # Helper function to format room numbers
         def format_room(room):
             if pd.isna(room):
                 return "N/A"
             try:
-                # Convert to float first to handle both string and numeric inputs
                 num = float(room)
-                # Check if it's a whole number
                 if num.is_integer():
-                    return str(int(num))  # Remove decimal for whole numbers
-                return str(num)  # Keep decimal if it's not a whole number
+                    return str(int(num))
+                return str(num)
             except (ValueError, TypeError):
                 return str(room)
         
-        # Helper function to handle nan values
         def format_session(session):
             if pd.isna(session):
                 return "N/A"
@@ -281,46 +272,29 @@ def confirm_breakout():
 
         breakout_details = {}
         
-        # Check if person is from ibreakouts.csv (looking for indicators like Wing or specific columns)
-        is_ibreakout = False
-        for col in person.index:
-            
-            if col == 'Wing' and person['Wing'] in ['Balika', 'Kishori', 'Yuvati', 'iBKY']:  # Check if 'Wing' exists and matches one of the valid values
-                is_ibreakout = True
-                break
+        # Determine format by checking for Wing column
+        is_ibreakout = 'Wing' in person.index
 
-        if 'Breakout #1 (10:30 - 12:00)' in person.index:
-            # Handle original format with separate room columns
-            breakout1_session = format_session(person.get('Breakout #1 (10:30 - 12:00)', 'N/A'))
-            breakout1_room = format_room(person.get('Room Number', 'N/A'))
-            if breakout1_session != "N/A":
-                breakout_details['Breakout #1'] = {
-                    "Time": "10:30 - 12:00",
-                    "Session": breakout1_session,
-                    "Room": breakout1_room,
-                    "Display": f"{breakout1_session} (Room {breakout1_room})" if breakout1_session != 'N/A' else 'N/A'
-                }
+        if not is_ibreakout:
+            # Handle ebreakouts format
+            ebreakout_columns = [
+                ('Breakout #1', 'Breakout #1 (10:30 - 12:00)', 'Room Number', '10:30 - 12:00'),
+                ('Breakout #2', 'Breakout #2 (6:00 - 7:30)', 'Room Number.1', '6:00 - 7:30'),
+                ('Breakout #3', 'Breakout #3 (8:45 - 9:45)', 'Room Number.2', '8:45 - 9:45')
+            ]
 
-            breakout2_session = format_session(person.get('Breakout #2 (6:00 - 7:30)', 'N/A'))
-            breakout2_room = format_room(person.get('Room Number.1', 'N/A'))
-            if breakout2_session != "N/A":
-                breakout_details['Breakout #2'] = {
-                    "Time": "6:00 - 7:30",
-                    "Session": breakout2_session,
-                    "Room": breakout2_room,
-                    "Display": f"{breakout2_session} (Room {breakout2_room})" if breakout2_session != 'N/A' else 'N/A'
-                }
+            for breakout_num, session_col, room_col, time in ebreakout_columns:
+                session = format_session(person.get(session_col, 'N/A'))
+                room = format_room(person.get(room_col, 'N/A'))
+                if session != "N/A":
+                    breakout_details[breakout_num] = {
+                        "Time": time,
+                        "Session": session,
+                        "Room": room,
+                        "Display": f"{session} (Room {room})" if session != 'N/A' else 'N/A'
+                    }
 
-            breakout3_session = format_session(person.get('Breakout #3 (8:45 - 9:45)', 'N/A'))
-            breakout3_room = format_room(person.get('Room Number.2', 'N/A'))
-            if breakout3_session != "N/A":
-                breakout_details['Breakout #3'] = {
-                    "Time": "8:45 - 9:45",
-                    "Session": breakout3_session,
-                    "Room": breakout3_room,
-                    "Display": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
-                }
-
+            # Handle Center Planning for ebreakouts
             center_planning_session = format_session(person.get('Center Planning (4:30 - 6:00)', 'N/A'))
             center_planning_room = format_room(person.get('Room Number.3', 'N/A'))
             center_planning = {
@@ -330,6 +304,7 @@ def confirm_breakout():
                 "Display": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
             }
 
+            # Handle Ghoshti for ebreakouts
             ghoshti_session = format_session(person.get('Ghosthi Group (3:15 - 4:00)', 'N/A'))
             ghoshti_room = format_room(person.get('Room Number.4', 'N/A'))
             ghoshti = {
@@ -338,8 +313,10 @@ def confirm_breakout():
                 "Room": ghoshti_room,
                 "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
             }
+
         else:
-            # Handle new format (ibreakouts.csv)
+            # Handle ibreakouts format
+            # Breakout #1
             breakout1_session = format_session(person.get('Breakout #1 10:30am-12pm', 'N/A'))
             breakout1_room = format_session(person.get('Breakout Room 1', 'N/A'))
             if breakout1_session != "N/A":
@@ -347,9 +324,10 @@ def confirm_breakout():
                     "Time": "10:30am-12pm",
                     "Session": breakout1_session,
                     "Room": breakout1_room,
-                    "Display": f"{breakout1_session} ({breakout1_room})"
+                    "Display": f"{breakout1_session} ({breakout1_room})" if breakout1_room != "N/A" else breakout1_session
                 }
 
+            # Breakout #2
             breakout2_session = format_session(person.get('Breakout #2 6pm-7:30pm', 'N/A'))
             breakout2_room = format_session(person.get('Breakout Room 2', 'N/A'))
             if breakout2_session != "N/A":
@@ -357,24 +335,24 @@ def confirm_breakout():
                     "Time": "6pm-7:30pm",
                     "Session": breakout2_session,
                     "Room": breakout2_room,
-                    "Display": f"{breakout2_session} ({breakout2_room})"
+                    "Display": f"{breakout2_session} ({breakout2_room})" if breakout2_room != "N/A" else breakout2_session
                 }
 
-            # Handle Center Planning
+            # Handle Center Planning for ibreakouts
             center_planning_session = format_session(person.get('Center Analysis 4:30-6pm', 'N/A'))
             center_planning = {
                 "Time": "4:30-6pm",
                 "Session": center_planning_session,
-                "Room": "N/A",  # For ibreakouts, the room is often included in the session name
+                "Room": "N/A",
                 "Display": center_planning_session
             }
 
-            # Handle Goshti
+            # Handle Ghoshti for ibreakouts
             ghoshti_session = format_session(person.get('Goshti 3:15-4pm', 'N/A'))
             ghoshti = {
                 "Time": "3:15-4pm",
                 "Session": ghoshti_session,
-                "Room": "N/A",  # For ibreakouts, the room is often included in the session name
+                "Room": "N/A",
                 "Display": ghoshti_session
             }
 
@@ -396,7 +374,7 @@ def confirm_breakout():
         })
     
     except Exception as e:
-        print(f"Error in confirm_breakout: {str(e)}")  # Add this for debugging
+        print(f"Error in confirm_breakout: {str(e)}")
         return jsonify({"message": "Error confirming breakout details.", "error": str(e)}), 500
 
 
