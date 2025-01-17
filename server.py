@@ -326,28 +326,44 @@ def confirm_breakout():
         print(f"Error in confirm_breakout: {str(e)}")
         return jsonify({"message": "Error confirming breakout details.", "error": str(e)}), 500
 
+
 @app.route('/search_by_full_name', methods=['POST'])
 def search_by_full_name():
-    user_data = request.json
-    first_name = user_data.get('First Name', '').strip().title()
-    last_name = user_data.get('Last Name', '').strip().title()
+    try:
+        user_data = request.json
+        first_name = user_data.get('First Name', '').strip().title()
+        last_name = user_data.get('Last Name', '').strip().title()
 
-    if not first_name or not last_name:
-        return jsonify({"message": "Please provide both First Name and Last Name."}), 400
+        if not first_name or not last_name:
+            return jsonify({"message": "Please provide both First Name and Last Name."}), 400
+            
+        # Load from JSON lookup file
+        with open('breakouts_lookup.json', 'r') as f:
+            lookup_data = json.load(f)
 
-    matches = combined_breakouts[
-        (combined_breakouts['First Name'] == first_name) &
-        (combined_breakouts['Last Name'] == last_name)
-    ]
+        # Find matches where first and last name match
+        matches = []
+        for key, person in lookup_data.items():
+            if (person['First Name'] == first_name and 
+                person['Last Name'] == last_name):
+                matches.append({
+                    'First Name': person['First Name'],
+                    'Last Name': person['Last Name'],
+                    'Center': person['Center'],
+                    'Primary Seva': person['Primary Seva']
+                })
 
-    if matches.empty:
-        return jsonify({"message": "No match found for the provided name. Please check your details or contact support."})
-    
-    options = matches[['First Name', 'Last Name', 'Center', 'Primary Seva']].to_dict(orient='records')
-    return jsonify({
-        "message": "Please confirm your identity from the options below.",
-        "options": options
-    })
+        if not matches:
+            return jsonify({"message": "No match found for the provided name. Please check your details or contact support."})
+        
+        return jsonify({
+            "message": "Please confirm your identity from the options below.",
+            "options": matches
+        })
+
+    except Exception as e:
+        print(f"Error in search_by_full_name: {str(e)}")  # Error log
+        return jsonify({"message": "Error processing request", "error": str(e)}), 500
 
 @app.route('/ebreakouts_map', methods=['GET'])
 def get_ebreakouts_map():
