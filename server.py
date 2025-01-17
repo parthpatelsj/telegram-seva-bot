@@ -239,157 +239,78 @@ def confirm_breakout():
         center = user_data.get('Center', '').strip()
         seva = user_data.get('Primary Seva', '').strip()
 
-        if not all([first_name, last_name, center, seva]):
-            return jsonify({"message": "Please provide complete details to confirm your identity."}), 400
+        # Create lookup key in same format as in combined data
+        lookup_key = f"{first_name}|{last_name}|{center}|{seva}"
 
-        matches = combined_breakouts[
-            (combined_breakouts['First Name'] == first_name) &
-            (combined_breakouts['Last Name'] == last_name) &
-            (combined_breakouts['Center'] == center) &
-            (combined_breakouts['Primary Seva'] == seva)
-        ]
+        # Load the data from the lookup file
+        try:
+            with open('breakouts_lookup.json', 'r') as f:
+                lookup_data = json.load(f)
+        except FileNotFoundError:
+            return jsonify({"message": "System configuration error. Please contact support."}), 500
 
-        if matches.empty:
+        if lookup_key not in lookup_data:
             return jsonify({"message": "Confirmation failed. Please try again or contact support."}), 400
 
-        person = matches.iloc[0]
-        
-        def format_room(room):
-            if pd.isna(room):
-                return "N/A"
-            try:
-                num = float(room)
-                if num.is_integer():
-                    return str(int(num))
-                return str(num)
-            except (ValueError, TypeError):
-                return str(room)
-        
-        def format_session(session):
-            if pd.isna(session):
-                return "N/A"
-            return str(session)
-
+        person = lookup_data[lookup_key]
         breakout_details = {}
-        #is_ibreakout = 'Wing' in person.index
-        is_ibreakout = False
-        for col in person.index:
-            if col == 'Wing' and person['Wing'] in ['balika', 'kishori', 'yuvati']:  # Check if 'Wing' exists and matches one of the valid values
-                is_ibreakout = True
-                break
 
-
-        if not is_ibreakout:
-            # Handle ebreakouts format
-            # Breakout #1
-            session1 = format_session(person['Breakout #1 (10:30 - 12:00)'])
-            room1 = format_room(person['Room Number'])
-            if session1 != "N/A":
-                breakout_details['Breakout #1'] = {
-                    "Time": "10:30 - 12:00",
-                    "Session": session1,
-                    "Room": room1,
-                    "Display": f"{session1} (Room {room1})"
-                }
-
-            # Breakout #2
-            session2 = format_session(person['Breakout #2 (6:00 - 7:30)'])
-            room2 = format_room(person['Room Number_1'])
-            if session2 != "N/A":
-                breakout_details['Breakout #2'] = {
-                    "Time": "6:00 - 7:30",
-                    "Session": session2,
-                    "Room": room2,
-                    "Display": f"{session2} (Room {room2})"
-                }
-
-            # Breakout #3
-            session3 = format_session(person['Breakout #3 (8:45 - 9:45)'])
-            room3 = format_room(person['Room Number_2'])
-            if session3 and session3 != "N/A":
-                breakout_details['Breakout #3'] = {
-                    "Time": "8:45 - 9:45",
-                    "Session": session3,
-                    "Room": room3,
-                    "Display": f"{session3} (Room {room3})"
-                }
-
-            # Handle Center Planning
-            center_planning_session = format_session(person['Center Planning (4:30 - 6:00)'])
-            center_planning_room = format_room(person['Room Number_3'])
-            center_planning = {
-                "Time": "4:30 - 6:00",
-                "Session": center_planning_session,
-                "Room": center_planning_room,
-                "Display": f"{center_planning_session} (Room {center_planning_room})"
+        # Add Breakout sessions if they exist
+        if person['Breakout1_Session'] and person['Breakout1_Session'] != 'nan':
+            breakout_details['Breakout #1'] = {
+                "Time": person['Breakout1_Time'],
+                "Session": person['Breakout1_Session'],
+                "Room": person['Breakout1_Room'],
+                "Display": f"{person['Breakout1_Session']} ({person['Breakout1_Room']})"
             }
 
-            # Handle Ghoshti
-            ghoshti_session = format_session(person['Ghosthi Group (3:15 - 4:00)'])
-            ghoshti_room = format_room(person['Room Number_4'])
-            ghoshti = {
-                "Time": "3:15 - 4:00",
-                "Session": ghoshti_session,
-                "Room": ghoshti_room,
-                "Display": f"{ghoshti_session} (Room {ghoshti_room})"
+        if person['Breakout2_Session'] and person['Breakout2_Session'] != 'nan':
+            breakout_details['Breakout #2'] = {
+                "Time": person['Breakout2_Time'],
+                "Session": person['Breakout2_Session'],
+                "Room": person['Breakout2_Room'],
+                "Display": f"{person['Breakout2_Session']} ({person['Breakout2_Room']})"
             }
 
-        else:
-            # Handle ibreakouts format
-            breakout1_session = format_session(person['Breakout #1 10:30am-12pm'])
-            breakout1_room = format_session(person['Breakout Room 1'])
-            if breakout1_session != "N/A":
-                breakout_details['Breakout #1'] = {
-                    "Time": "10:30am-12pm",
-                    "Session": breakout1_session,
-                    "Room": breakout1_room,
-                    "Display": f"{breakout1_session} ({breakout1_room})"
-                }
-
-            breakout2_session = format_session(person['Breakout #2 6pm-7:30pm'])
-            breakout2_room = format_session(person['Breakout Room 2'])
-            if breakout2_session != "N/A":
-                breakout_details['Breakout #2'] = {
-                    "Time": "6pm-7:30pm",
-                    "Session": breakout2_session,
-                    "Room": breakout2_room,
-                    "Display": f"{breakout2_session} ({breakout2_room})"
-                }
-
-            # Handle Center Planning
-            center_planning_session = format_session(person['Center Analysis 4:30-6pm'])
-            center_planning = {
-                "Time": "4:30-6pm",
-                "Session": center_planning_session,
-                "Room": "N/A",
-                "Display": center_planning_session
+        if person['Breakout3_Session'] and person['Breakout3_Session'] != 'nan':
+            breakout_details['Breakout #3'] = {
+                "Time": person['Breakout3_Time'],
+                "Session": person['Breakout3_Session'],
+                "Room": person['Breakout3_Room'],
+                "Display": f"{person['Breakout3_Session']} ({person['Breakout3_Room']})"
             }
 
-            # Handle Ghoshti
-            ghoshti_session = format_session(person['Goshti 3:15-4pm'])
-            ghoshti = {
-                "Time": "3:15-4pm",
-                "Session": ghoshti_session,
-                "Room": "N/A",
-                "Display": ghoshti_session
-            }
-
+        # Build response
         response_details = {
             "First Name": person['First Name'],
             "Last Name": person['Last Name'],
             "Center": person['Center'],
             "Primary Seva": person['Primary Seva'],
             "Breakout Sessions": breakout_details,
-            "Center Planning": center_planning,
-            "Ghoshti": ghoshti,
-            "Source": "ibreakouts" if is_ibreakout else "ebreakouts"
+            "Center Planning": {
+                "Time": person['Center_Planning_Time'],
+                "Session": person['Center_Planning_Session'],
+                "Room": person['Center_Planning_Room'],
+                "Display": (f"{person['Center_Planning_Session']} ({person['Center_Planning_Room']})" 
+                          if person['Center_Planning_Room'] and person['Center_Planning_Room'] != 'nan'
+                          else person['Center_Planning_Session'])
+            },
+            "Ghoshti": {
+                "Time": person['Ghoshti_Time'],
+                "Session": person['Ghoshti_Session'],
+                "Room": str(person['Ghoshti_Room']) if pd.notna(person['Ghoshti_Room']) else "",
+                "Display": (f"{person['Ghoshti_Session']} ({str(person['Ghoshti_Room'])})"
+                          if pd.notna(person['Ghoshti_Room'])
+                          else person['Ghoshti_Session'])
+            },
+            "Source": person['Type'].lower()  # This will be either 'ibky' or 'ebky'
         }
 
         return jsonify({
             "message": "Breakout details confirmed!",
             "details": response_details
         })
-    
+
     except Exception as e:
         print(f"Error in confirm_breakout: {str(e)}")
         return jsonify({"message": "Error confirming breakout details.", "error": str(e)}), 500
