@@ -231,11 +231,17 @@ async def search_by_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE
             # Multiple matches found; ask for confirmation
             keyboard = []
             for opt in data["options"]:
+                # Construct the callback_data
                 callback_data = f"confirm_breakout:{opt['First Name']}:{opt['Last Name']}:{opt['Center']}:{opt['Primary Seva']}"
-                
-                # Truncate callback_data if it exceeds Telegram's limit
+
+                # Truncate callback_data intelligently
                 if len(callback_data) > 64:
-                    callback_data = callback_data[:64]
+                    # Ensure the truncation still provides meaningful information
+                    first_name = opt['First Name'][:10]  # Truncate to 10 characters
+                    last_name = opt['Last Name'][:10]   # Truncate to 10 characters
+                    center = opt['Center'][:10]        # Truncate to 10 characters
+                    seva = opt['Primary Seva'][:10]    # Truncate to 10 characters
+                    callback_data = f"confirm_breakout:{first_name}:{last_name}:{center}:{seva}"
 
                 keyboard.append(
                     [InlineKeyboardButton(
@@ -243,7 +249,7 @@ async def search_by_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE
                         callback_data=callback_data
                     )]
                 )
-            
+
             reply_markup = InlineKeyboardMarkup(keyboard)
             await update.message.reply_text(data["message"], reply_markup=reply_markup)
         else:
