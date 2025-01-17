@@ -227,39 +227,54 @@ def confirm_breakout():
     # Format breakout session details with room numbers
     breakout_details = {}
     
-    # Breakout #1
+    # Breakout #1 (uses original 'Room Number' column)
     breakout1_session = person.get('Breakout #1 (10:30 - 12:00)', 'N/A')
-    breakout1_room = person.get('Breakout #1 Room Number', 'N/A')
+    breakout1_room = person.get('Room Number', 'N/A')
     breakout_details['Breakout #1'] = {
-        "Session": f"{breakout1_session} (Room {breakout1_room})" if breakout1_session != 'N/A' else 'N/A'
+        "Time": "10:30 - 12:00",
+        "Session": breakout1_session,
+        "Room": breakout1_room,
+        "Display": f"{breakout1_session} (Room {breakout1_room})" if breakout1_session != 'N/A' else 'N/A'
     }
 
-    # Breakout #2
+    # Breakout #2 (uses 'Room Number.1')
     breakout2_session = person.get('Breakout #2 (6:00 - 7:30)', 'N/A')
-    breakout2_room = person.get('Breakout #2 Room Number', 'N/A')
+    breakout2_room = person.get('Room Number.1', 'N/A')
     breakout_details['Breakout #2'] = {
-        "Session": f"{breakout2_session} (Room {breakout2_room})" if breakout2_session != 'N/A' else 'N/A'
+        "Time": "6:00 - 7:30",
+        "Session": breakout2_session,
+        "Room": breakout2_room,
+        "Display": f"{breakout2_session} (Room {breakout2_room})" if breakout2_session != 'N/A' else 'N/A'
     }
 
-    # Breakout #3
+    # Breakout #3 (uses 'Room Number.2')
     breakout3_session = person.get('Breakout #3 (8:45 - 9:45)', 'N/A')
-    breakout3_room = person.get('Breakout #3 Room Number', 'N/A')
+    breakout3_room = person.get('Room Number.2', 'N/A')
     breakout_details['Breakout #3'] = {
-        "Session": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
+        "Time": "8:45 - 9:45",
+        "Session": breakout3_session,
+        "Room": breakout3_room,
+        "Display": f"{breakout3_session} (Room {breakout3_room})" if breakout3_session != 'N/A' else 'N/A'
     }
 
-    # Center Planning
+    # Center Planning (uses 'Room Number.3')
     center_planning_session = person.get('Center Planning (4:30 - 6:00)', 'N/A')
-    center_planning_room = person.get('Center Planning Room Number', 'N/A')
+    center_planning_room = person.get('Room Number.3', 'N/A')
     center_planning = {
-        "Session": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
+        "Time": "4:30 - 6:00",
+        "Session": center_planning_session,
+        "Room": center_planning_room,
+        "Display": f"{center_planning_session} (Room {center_planning_room})" if center_planning_session != 'N/A' else 'N/A'
     }
 
-    # Ghoshti Group
+    # Ghoshti Group (uses 'Room Number.4')
     ghoshti_session = person.get('Ghosthi Group (3:15 - 4:00)', 'N/A')
-    ghoshti_room = person.get('Ghosthi Group Room Number', 'N/A')
+    ghoshti_room = person.get('Room Number.4', 'N/A')
     ghoshti = {
-        "Session": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
+        "Time": "3:15 - 4:00",
+        "Session": ghoshti_session,
+        "Room": ghoshti_room,
+        "Display": f"{ghoshti_session} (Room {ghoshti_room})" if ghoshti_session != 'N/A' else 'N/A'
     }
 
     # Build the response
@@ -277,7 +292,6 @@ def confirm_breakout():
         "message": "Breakout details confirmed!",
         "details": response_details
     })
-
 
 
 @app.route('/search_by_full_name', methods=['POST'])
