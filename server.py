@@ -380,6 +380,14 @@ def get_ibreakouts_map():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/goals', methods=['GET'])
+def get_goals_pdf():
+    try:
+        return send_file('BKY 2025 Goals.pdf', as_attachment=True)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 ### Stuff from seva
 
 # Route to get all seva slots with volunteers

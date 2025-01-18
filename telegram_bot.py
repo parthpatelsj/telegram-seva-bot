@@ -31,6 +31,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         [InlineKeyboardButton("📘 Breakout Schedule", callback_data="breakout_schedule")],
         [InlineKeyboardButton("🍴 Food Menu", callback_data="food_menu")],
         [InlineKeyboardButton("📊 BKY Year In Review", callback_data="year_in_review")]
+        [InlineKeyboardButton("🎯 2025 BKY Goals", callback_data="bky_goals")]
+
 
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -50,6 +52,32 @@ async def handle_static_response(update: Update, context: ContextTypes.DEFAULT_T
         # "common_session_seating": "📍 *Common Session Seating*\nSeating details will be updated shortly!"
     }.get(query.data, "Sorry, I couldn't find the information.")
     await query.edit_message_text(text=response, parse_mode="Markdown")
+
+
+async def bky_goals(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()  # Acknowledge the button click
+
+    try:
+        # Fetch the PDF from the server
+        response = requests.get(f"{BASE_URL}/goals", stream=True)
+        if response.status_code != 200:
+            await query.edit_message_text("Failed to retrieve the goals PDF. Please try again later.")
+            return
+
+        # Send the PDF to the user
+        pdf_data = BytesIO(response.content)
+        pdf_data.seek(0)
+
+        await context.bot.send_document(
+            chat_id=query.message.chat_id,
+            document=InputFile(pdf_data, filename="BKY_Goals_2025.pdf"),
+            caption="🎯 *BKY Goals 2025*",
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        logger.error(f"Error retrieving goals PDF: {str(e)}")
+        await query.edit_message_text("Error retrieving the goals PDF. Please try again later.")
 
 
 async def event_schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -462,6 +490,7 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(food_menu, pattern="^food_menu$"))
     application.add_handler(CallbackQueryHandler(food_menu_by_date, pattern="^food_menu_date:"))
     application.add_handler(CallbackQueryHandler(year_in_review, pattern="^year_in_review$"))
+    application.add_handler(CallbackQueryHandler(bky_goals, pattern="^bky_goals$"))
     application.add_handler(CallbackQueryHandler(breakout_schedule, pattern="^breakout_schedule$"))
     application.add_handler(CallbackQueryHandler(confirm_breakout, pattern="^confirm_breakout:"))
 
